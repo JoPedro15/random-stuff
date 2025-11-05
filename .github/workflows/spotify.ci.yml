@@ -1,0 +1,108 @@
+name: Spotify CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "spotify/**"
+      - ".github/workflows/spotify.ci.yml"
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "spotify/**"
+      - ".github/workflows/spotify.ci.yml"
+  workflow_dispatch: { }
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spotify-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    name: Lint & Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Use versions readily available on GitHub runners.
+        python-version: [ "3.10", "3.11", "3.12" ]
+
+    defaults:
+      run:
+        working-directory: spotify
+
+    env:
+      # Make local packages importable (spotify/src + repo root for `common`)
+      PYTHONPATH: ${{ github.workspace }}/spotify/src:${{ github.workspace }}
+      # Wire Spotify creds from repo / org secrets (set these in GitHub → Settings → Secrets and variables → Actions)
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      SPOTIFY_AUTH_URL: ${{ secrets.SPOTIFY_AUTH_URL }}
+      SPOTIFY_ENDPOINT: ${{ secrets.SPOTIFY_ENDPOINT }}
+      # Quiet test output
+      PYTEST_ADDOPTS: "-q --tb=short -p no:warnings -p no:logging"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install project (editable) and dev tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Ensure tools (if not already in pyproject deps)
+          pip install ruff black isort pytest
+
+      # Lint & format checks (non-destructive)
+      - name: Ruff (lint)
+        run: python -m ruff check .
+
+      - name: Black (format check)
+        run: python -m black --check .
+
+      - name: isort (import order check)
+        run: python -m isort --check-only .
+
+      - name: Run tests
+        run: python -m pytest
+
+  # Optional: coverage job (uploads a badge/artifact)
+  coverage:
+    name: Coverage (3.11)
+    runs-on: ubuntu-latest
+    needs: [ lint-and-test ]
+    if: ${{ always() }}  # run even if matrix failed, for debugging
+    defaults:
+      run:
+        working-directory: spotify
+    env:
+      PYTHONPATH: ${{ github.workspace }}/spotify/src:${{ github.workspace }}
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      SPOTIFY_AUTH_URL: ${{ secrets.SPOTIFY_AUTH_URL }}
+      SPOTIFY_ENDPOINT: ${{ secrets.SPOTIFY_ENDPOINT }}
+      PYTEST_ADDOPTS: "-q --tb=short -p no:warnings -p no:logging"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install coverage pytest-cov
+      - name: Pytest with coverage
+        run: python -m pytest --cov=src --cov-report=term-missing
