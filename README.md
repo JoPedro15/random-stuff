@@ -1,72 +1,37 @@
-# 🧩 Random Stuff
+# 🧩 Random Stuff Monorepo
 
-A collection of small, focused Python projects exploring **APIs**, **automation**, and **experiments** — all under one
-roof, sharing common tooling and conventions.
+[![Spotify CI](https://github.com/JoPedro15/random-stuff/actions/workflows/spotify.ci.yml/badge.svg)](https://github.com/JoPedro15/random-stuff/actions)
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## 📁 Structure
+A collection of modular Python services, clients, and automated experiments.
+This repository follows **Monorepo Best Practices**, with a clear separation between infrastructure (clients) and
+business logic (projects).
 
-| Folder     | Description                                                      |
-|------------|------------------------------------------------------------------|
-| `common/`  | Shared utilities (e.g., logging, helpers) reused across projects |
-| `spotify/` | Lightweight **Spotify Web API client** (Client Credentials flow) |
+---
 
-Each subproject is self-contained with its own:
+## 🏗️ Architecture & Structure
 
-- `Makefile`
-- `pyproject.toml`
-- `src/` and `tests/` directories
+The repository is organized into distinct layers to ensure scalability and code reusability:
 
-## ⚙️ Quickstart
+| Layer        | Path        | Description                                                                     |
+|:-------------|:------------|:--------------------------------------------------------------------------------|
+| **Clients**  | `clients/`  | Infrastructure connectors (e.g., Spotify API). Designed as standalone packages. |
+| **Projects** | `projects/` | Application-level logic and specific use cases.                                 |
+| **Common**   | `common/`   | Shared utilities (Logging, Env Management, etc.) reused across the repo.        |
+| **Tooling**  | `tooling/`  | Centralized Makefile rules and CI/CD configurations.                            |
+
+---
+
+## 🛠️ Global Tooling & Quality Gates
+
+This project uses a centralized automation system via **GNU Make**.
+
+### 1️⃣ Environment Setup
+
+We use a single, shared virtual environment at the root level to minimize overhead:
 
 ```bash
-# 1️⃣ Create and activate a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 2️⃣ Install dependencies
 make setup
-
-# 3️⃣ Format, lint, and test everything
-make fmt
-make lint
-make test
-```
-
-## 🧱 Project Conventions
-
-### Python version: ≥ 3.10
-
-### Layout per project:
-
-```bash
-<project>/
-├─ src/
-│  └─ <package>/
-├─ tests/
-├─ Makefile
-└─ pyproject.toml
-```
-
-### Logging
-
-Use common/python/logging_utils.py to keep output consistent across projects.
-
-## 🪄 Adding a New Project
-
-```
-mkdir my-new-project && cd my-new-project
-mkdir src tests
-cp ../spotify/Makefile .
-```
-
-Then update:
-
-the import paths
-
-the pyproject.toml (name, dependencies)
-
-and write your first test in tests/
-
-<div style="text-align: center;">
-  <b>Made with ☕ by João</b><br>
-</div>
+source .venv/bin/activate
+``
