@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "../../clients/spotify/**"
+      - "/clients/spotify/**"
       - ".github/workflows/spotify.ci.yml"
   pull_request:
     branches: [ main ]
@@ -31,10 +31,10 @@ jobs:
 
     defaults:
       run:
-        working-directory: spotify
+        working-directory: clients/spotify
 
     env:
-      PYTHONPATH: ${{ github.workspace }}/spotify/src:${{ github.workspace }}
+      PYTHONPATH: ${{ github.workspace }}
       SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
       SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
       SPOTIFY_AUTH_URL: ${{ vars.SPOTIFY_AUTH_URL }}
