@@ -4,7 +4,7 @@ CLI for Spotify client
 
 # stdlib
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
 # third-party
 import requests
@@ -12,7 +12,8 @@ import requests
 # first-party
 from common.python.logging_utils import setup
 from dotenv import load_dotenv
-from spotify.src.utils import format_spotify_album
+
+from clients.spotify.spotify_client.utils import format_spotify_album
 
 
 class SpotifyClient:
@@ -97,7 +98,7 @@ class SpotifyClient:
 
         return token
 
-    def _auth_headers(self) -> dict:
+    def _auth_headers(self) -> Dict[str, Any]:
         """
         Build Authorization headers for subsequent API requests.
 
@@ -107,7 +108,7 @@ class SpotifyClient:
         token = self.get_access_token()
         return {"Authorization": f"Bearer {token}"}
 
-    def search_for_track(self, track_name: str, track_artist: str, track_album: str) -> dict:
+    def get_track(self, track_name: str, track_artist: str, track_album: str) -> dict:
         """
         Search for a Spotify track and retrieve detailed information.
 
@@ -162,7 +163,7 @@ class SpotifyClient:
         print(f"⏱️ ID: {track['id']}")
         return track
 
-    def search_for_album_by_id(self, album_id: str) -> dict:
+    def fetch_album(self, album_id: str) -> Dict[str, Any]:
         """
         Fetch detailed album information from Spotify by its unique ID.
 
