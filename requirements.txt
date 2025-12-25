@@ -1,2 +1,11 @@
+scikit-learn
+intercept
+pytest
+nbclient
+nbformat
+scipy
+matplotlib
+numpy
+pandas
 requests
 python-dotenv

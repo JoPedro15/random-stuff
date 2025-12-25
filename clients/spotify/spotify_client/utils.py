@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 
-def multiple_tracks_paser(response):
+def parse_multiple_tracks(response):
     # Extract the list of tracks
     tracks = response.get("tracks", [])
 
