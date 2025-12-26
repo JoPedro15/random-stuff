@@ -1,18 +1,41 @@
-# random-stuff/Makefile
+VENV        := .venv
+PY          := $(VENV)/bin/python
+PIP         := $(PY) -m pip
+REQ_DEV     := requirements.txt
 
-.PHONY: setup all test lint fmt clean
+.PHONY: setup update-deps security test-all test-spotify test-gdrive lint fmt clean
+
 
 setup:
-	@echo ">>> Initializing Monorepo Environment with Python 3.13..."
-	@if [ ! -d ".venv" ]; then python3 -m venv .venv; fi
-	# Install each client in editable mode so they are available globally in the venv
-	$(MAKE) -C clients/spotify setup
-	$(MAKE) -C clients/gdrive setup
+	@echo ">>> Creating Virtual Environment..."
+	python3 -m venv $(VENV)
+	$(PIP) install --upgrade pip
+	@$(MAKE) update-deps
+	@echo ">>> System ready!"
 
-all: lint test
+update-deps:
+	@echo ">>> Installing/Updating all development requirements..."
+	# -U upgrades all specified packages to the newest available version
+	$(PIP) install -U -r $(REQ_DEV)
 
-test:
+security:
+	@echo ">>> Running Security Analysis (Bandit)..."
+	$(PY) -m bandit -r clients/ -ll
+	@echo ">>> Running Dependency Audit (pip-audit)..."
+	$(PY) -m pip_audit clients/spotify/
+	$(PY) -m pip_audit clients/gdrive/
+
+test-all:
+	@echo ">>> Running all automation tests..."
+	@$(MAKE) test-spotify
+	@$(MAKE) test-gdrive
+	@echo ">>> All tests completed!"
+
+test-spotify:
 	$(MAKE) -C clients/spotify test
+
+test-gdrive:
+	$(MAKE) -C clients/gdrive test
 
 lint:
 	$(MAKE) -C clients/spotify lint
