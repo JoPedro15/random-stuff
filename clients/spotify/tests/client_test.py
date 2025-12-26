@@ -1,5 +1,6 @@
 import pytest
-from clients.spotify import SpotifyClient
+
+from clients.spotify.spotify_client.client import SpotifyClient
 
 
 @pytest.mark.parametrize(

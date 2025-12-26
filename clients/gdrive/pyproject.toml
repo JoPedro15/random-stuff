@@ -22,3 +22,6 @@ filterwarnings = [
     "ignore::DeprecationWarning:httplib2.*:",
     "ignore::DeprecationWarning:googleapiclient.*:",
 ]
+testpaths = ["tests"]
+pythonpath = ["../../", "."]
+addopts = "-vv --tb=short"
