@@ -86,8 +86,8 @@ jobs:
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          SPOTIFY_AUTH_URL: ${{ secrets.SPOTIFY_AUTH_URL }}
-          SPOTIFY_API_BASE_URL: ${{ secrets.SPOTIFY_API_BASE_URL }}
+          SPOTIFY_AUTH_URL: ${{ vars.SPOTIFY_AUTH_URL }}
+          SPOTIFY_API_BASE_URL: ${{ vars.SPOTIFY_API_BASE_URL }}
         run: |
           pip install -e .
           pip install pytest ruff black
