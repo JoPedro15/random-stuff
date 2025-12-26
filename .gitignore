@@ -28,3 +28,6 @@ Thumbs.db
 # Temp files
 test_upload.txt
 clients/gdrive/test_upload.txt
+
+clients/**/output/*
+!clients/**/output/.gitkeep
