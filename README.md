@@ -53,5 +53,3 @@ We use a single, shared virtual environment at the root level to minimize overhe
 make setup
 source .venv/bin/activate
 ```
-
-new testttt
