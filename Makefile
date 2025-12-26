@@ -1,17 +1,15 @@
 # random-stuff/Makefile
 
--include tooling/python.mk
-
-.PHONY: setup all test lint fmt
+.PHONY: setup all test lint fmt clean
 
 setup:
-	@echo ">>> Setting up development environment..."
-	@echo "Tip: Install individual clients/projects if needed."
-	@echo "Example: make -C clients/spotify setup"
+	@echo ">>> Initializing Monorepo Environment with Python 3.13..."
 	@if [ ! -d ".venv" ]; then python3 -m venv .venv; fi
+	# Install each client in editable mode so they are available globally in the venv
+	$(MAKE) -C clients/spotify setup
+	$(MAKE) -C clients/gdrive setup
 
-all: ## Run lint+tests across all python projects
-	$(MAKE) -C clients/spotify ci
+all: lint test
 
 test:
 	$(MAKE) -C clients/spotify test

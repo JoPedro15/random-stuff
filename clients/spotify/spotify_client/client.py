@@ -21,7 +21,7 @@ class SpotifyClient:
     A small wrapper around the Spotify Web API using the Client Credentials flow.
 
     Responsibilities:
-      - Manage auth token (fetch + cache until expiry).
+      - Manage auth.py token (fetch + cache until expiry).
       - Provide typed, testable methods for common actions:
           * search_track(...)
           * get_track(...)
@@ -34,7 +34,7 @@ class SpotifyClient:
           SPOTIFY_CLIENT_SECRET
           SPOTIFY_AUTH_URL
           SPOTIFY_ENDPOINT
-      - Uses only application-level auth (no user scopes).
+      - Uses only application-level auth.py (no user scopes).
     """
 
     def __init__(
@@ -64,7 +64,7 @@ class SpotifyClient:
         self.logger = setup(name=logger_name)
 
         if not self.client_id or not self.client_secret or not self.auth_url:
-            raise SystemError("Missing Spotify credentials or auth URL in environment.")
+            raise SystemError("Missing Spotify credentials or auth.py URL in environment.")
 
         # Token cache
         self._access_token: Optional[str] = None
