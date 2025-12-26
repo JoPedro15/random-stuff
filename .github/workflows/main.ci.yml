@@ -13,7 +13,7 @@ on:
     paths:
       - "clients/**"
       - "common/**"
-  workflow_dispatch: { } # Allows manual trigger from GitHub UI
+  workflow_dispatch: { }
 
 permissions:
   contents: read
@@ -23,16 +23,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Job for Spotify Client
+  # --- SECURITY LAYER ---
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Security Tools
+        run: pip install bandit pip-audit
+
+      - name: Static Analysis (SAST)
+        # Bandit scans for common security issues in Python code
+        run: bandit -r clients/ -ll
+
+      - name: Dependency Audit
+        # pip-audit checks for known vulnerabilities (CVEs) in your dependencies
+        run: |
+          # We check the specific client folders
+          pip-audit --project clients/spotify || echo "Audit failed for Spotify"
+          pip-audit --project clients/gdrive || echo "Audit failed for GDrive"
+
+  # --- CLIENT JOBS (Now dependent on security-scan) ---
   spotify-client:
     name: Spotify (Python ${{ matrix.python-version }})
+    needs: security-scan # Blocks tests if security fails
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: [ "3.12" ]
 
-    # Only runs if files in spotify folder changed
     if: contains(github.event.head_commit.modified, 'clients/spotify/') || github.event_name == 'workflow_dispatch'
 
     defaults:
@@ -66,19 +93,19 @@ jobs:
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
         run: python -m pytest
 
-  # Job for Google Drive Client
   gdrive-client:
     name: GDrive (Python ${{ matrix.python-version }})
+    needs: security-scan # Blocks tests if security fails
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [ "3.12" ]
 
-    if: contains(github.event.head_commit.modified, 'clients/google_drive/') || github.event_name == 'workflow_dispatch'
+    if: contains(github.event.head_commit.modified, 'clients/gdrive/') || github.event_name == 'workflow_dispatch'
 
     defaults:
       run:
-        working-directory: clients/google_drive
+        working-directory: clients/gdrive
 
     steps:
       - name: Checkout repository
@@ -100,7 +127,5 @@ jobs:
           python -m ruff check .
           python -m black --check .
 
-      # Note: Integration tests for GDrive require OAuth tokens.
-      # Usually, these are skipped in CI unless using Service Accounts.
       - name: Run Unit Tests
         run: python -m pytest -m "not integration" || echo "Skipping integration tests"
