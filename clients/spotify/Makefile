@@ -20,6 +20,7 @@ help:
 setup:
 	$(PY) -m pip install -U pip
 	$(PY) -m pip install -e .
+	$(PY) -m pip install ruff black isort pytest
 	@if [ -f requirements.txt ]; then $(PY) -m pip install -r requirements.txt; fi
 
 ci: lint test

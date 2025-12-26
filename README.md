@@ -1,12 +1,13 @@
-# 🧩 Random Stuff Monorepo
+# 🧩 Automation Hub Monorepo
 
-[![Spotify CI](https://github.com/JoPedro15/random-stuff/actions/workflows/spotify.ci.yml/badge.svg)](https://github.com/JoPedro15/random-stuff/actions)
-![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
+[![Main CI](https://github.com/JoPedro15/automation-hub/actions/workflows/main.ci.yml/badge.svg)](https://github.com/JoPedro15/automation-hub/actions)
+![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-A collection of modular Python services, clients, and automated experiments.
-This repository follows **Monorepo Best Practices**, with a clear separation between infrastructure (clients) and
-business logic (projects).
+A professional monorepo for modular Python services and automated workflows.
+
+This repository follows **Monorepo Best Practices**, strictly separating
+infrastructure (clients) from business logic (projects).
 
 ---
 
@@ -14,16 +15,33 @@ business logic (projects).
 
 The repository is organized into distinct layers to ensure scalability and code reusability:
 
-| Layer        | Path        | Description                                                                     |
-|:-------------|:------------|:--------------------------------------------------------------------------------|
-| **Clients**  | `clients/`  | Infrastructure connectors (e.g., Spotify API). Designed as standalone packages. |
-| **Projects** | `projects/` | Application-level logic and specific use cases.                                 |
-| **Common**   | `common/`   | Shared utilities (Logging, Env Management, etc.) reused across the repo.        |
-| **Tooling**  | `tooling/`  | Centralized Makefile rules and CI/CD configurations.                            |
+| Layer        | Path        | Description                                                                 |
+|:-------------|:------------|:----------------------------------------------------------------------------|
+| **Clients**  | `clients/`  | Standalone infrastructure connectors (Spotify, GDrive).                     |
+| **Projects** | `projects/` | Application-level logic, AI experiments, and specific automation use cases. |
+| **Common**   | `common/`   | Shared utilities (Auth helpers, Logging) reused across the repo.            |
+| **Tooling**  | `tooling/`  | Centralized automation rules and CI/CD configurations.                      |
 
 ---
 
-## 🛠️ Global Tooling & Quality Gates
+## 🔌 Available Clients
+
+### Spotify Client
+
+* **Purpose**: Integration with Spotify Web API.
+* **Status**: Fully operational with OAuth2 support and CI testing.
+
+### Google Drive Client
+
+* [cite_start]**Purpose**: Automated file management (Upload/Download/List). [cite: 4]
+* **Technical Highlights**:
+    * [cite_start]Dynamic path resolution for credentials. [cite: 4]
+    * Integrated with local `pytest` suite.
+    * [cite_start]Supports specific folder uploads via `folder_id`. [cite: 4]
+
+---
+
+## 🛠️ Tooling & Quality Gates
 
 This project uses a centralized automation system via **GNU Make**.
 
