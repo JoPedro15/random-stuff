@@ -1,10 +1,30 @@
-# Python build/dist artifacts
-*.egg-info/
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.ruff_cache/
 dist/
 build/
-__pycache__/
+*.egg-info/
 
-# Virtual environments
-.venv/
+# Environment and Secrets
+.env
+clients/gdrive/data/credentials.json
+clients/gdrive/data/token.json
 
-clients/gdrive/data/*.json
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+test_upload.txt
+clients/gdrive/test_upload.txt
