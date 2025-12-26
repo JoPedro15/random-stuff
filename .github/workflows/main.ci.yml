@@ -114,6 +114,9 @@ jobs:
       - name: Create credentials file
         run: |
           mkdir -p data
+          cat <<'EOF' > data/credentials.json
+          ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
+          EOF
           echo '${{ secrets.GDRIVE_CREDENTIALS_JSON }}' > data/credentials.json
       - name: Lint and Unit Tests
         env:
