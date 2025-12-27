@@ -33,11 +33,11 @@ The repository is organized into distinct layers to ensure scalability and code 
 
 ### Google Drive Client
 
-* [cite_start]**Purpose**: Automated file management (Upload/Download/List). [cite: 4]
+* **Purpose**: Automated file management (Upload/Download/List).
 * **Technical Highlights**:
-    * [cite_start]Dynamic path resolution for credentials. [cite: 4]
+    * Dynamic path resolution for credentials.
     * Integrated with local `pytest` suite.
-    * [cite_start]Supports specific folder uploads via `folder_id`. [cite: 4]
+    * Supports specific folder uploads via `folder_id`.
 
 ---
 
