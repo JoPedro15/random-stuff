@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  quality-assurance:
+  install-dependencies:
+    name: Install Dependencies
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -19,22 +19,68 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install Dependencies
+      - name: Install
         run: |
           python -m pip install --upgrade pip
           make update-deps CI=true
 
-      - name: Linting & Formatting Check
-        run: |
-          # Executa o ruff/black/isort conforme definido no teu tooling
-          $(VENV)/bin/python -m ruff check .
-          $(VENV)/bin/python -m black --check .
+  lint-and-format:
+    name: Linting and Formatting Check
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Security Audit
-        run: |
-          make security
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
 
-      - name: Global Health Check
+      - name: Run Linting
+        run: |
+          pip install ruff black
+          ruff check .
+          black --check .
+
+  security-audit:
+    name: Security Audit
+    needs: install-dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Run Security
+        run: |
+          pip install bandit pip-audit
+          make security CI=true
+
+  global-health-check:
+    name: Global Health Check
+    needs: [ lint-and-format, security-audit ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install GDrive dependencies
+        run: make update-deps CI=true
+
+      - name: Run Health Check
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
           GDRIVE_TOKEN_DATA: ${{ secrets.GDRIVE_TOKEN_JSON }}
