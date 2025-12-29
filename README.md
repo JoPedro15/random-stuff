@@ -18,8 +18,6 @@ A professional monorepo for modular Python services and automated workflows.
 This repository acts as the **Single Source of Truth (SSoT)** for our automation ecosystem, strictly separating
 infrastructure (clients) from business logic (projects).
 
----
-
 ## 🏗️ Architecture & Structure
 
 The repository is organized into distinct layers to ensure scalability and code reusability:
