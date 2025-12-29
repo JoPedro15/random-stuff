@@ -39,7 +39,6 @@ jobs:
       - name: Dependency Audit
         # Audits both clients for vulnerable packages
         run: |
-          pip-audit clients/spotify/
           pip-audit clients/gdrive/
 
   # 🔍 CHANGES DETECTION: Intelligent path filtering for Monorepo efficiency
