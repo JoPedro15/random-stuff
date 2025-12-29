@@ -1,20 +1,27 @@
-scikit-learn
-intercept
-pytest
-nbclient
-nbformat
-scipy
-matplotlib
-numpy
-pandas
-requests
+# --- Core & Environment ---
 python-dotenv
+requests
+
+# --- Google Drive API Integration ---
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+
+# --- Data Science & AI (AI-Lab Support) ---
+numpy
+pandas
+scipy
+matplotlib
+scikit-learn
+
+# --- Quality Gates & Security (SSoT) ---
 bandit
 pip-audit
 ruff
 black
 isort
+
+# --- Testing & Notebook Automation ---
 pytest
+nbclient
+nbformat

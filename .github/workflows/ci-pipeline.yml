@@ -1,5 +1,5 @@
-# .github/workflows/main.ci.yml
-name: Automation Hub CI
+# .github/workflows/ci-pipeline.yml
+name: CI Quality Pipeline
 
 on:
   push:
@@ -99,9 +99,6 @@ jobs:
     needs: [ security-scan, changes ]
     if: ${{ needs.changes.outputs.gdrive == 'true' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: clients/gdrive
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,15 +108,18 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
+
       - name: Create credentials file
         run: |
           mkdir -p data
           echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > data/credentials.json
+
       - name: Lint and Unit Tests
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          pip install -e .
+          pip install -e ./clients/gdrive
           pip install pytest ruff black
-          # Skip integration tests that require local OAuth browser flow
-          python -m pytest -m "not integration" || [ $? -eq 5 ]
+          ruff check clients/gdrive
+          python -m pytest clients/gdrive/tests -m "not integration" || [ $? -eq 5 ]

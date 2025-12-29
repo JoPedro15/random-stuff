@@ -8,7 +8,7 @@ REQ_DEV     := requirements.txt
 SPOTIFY_DIR := clients/spotify
 GDRIVE_DIR  := clients/gdrive
 
-.PHONY: setup update-deps security test-all test-spotify test-gdrive clean lint-all fmt-all
+.PHONY: setup update-deps security health test-all test-spotify test-gdrive clean lint-all fmt-all
 
 # --- Main Orchestration ---
 
@@ -37,6 +37,16 @@ security:
 	@echo ">>> Running Dependency Audit (pip-audit)..."
 	# pip-audit: scans the entire environment for known vulnerabilities
 	$(PY) -m pip_audit
+
+# --- Health & Monitoring ---
+
+# Run all health checks from root
+health:
+	@echo ">>> Running Global Health Checks..."
+	@export PYTHONPATH=.:$(PYTHONPATH) && \
+	 export GDRIVE_CREDENTIALS_PATH="clients/gdrive/data/credentials.json" && \
+	 export GDRIVE_TOKEN_PATH="clients/gdrive/data/token.json" && \
+	 $(PY) scripts/global_health_check.py
 
 # --- Testing ---
 

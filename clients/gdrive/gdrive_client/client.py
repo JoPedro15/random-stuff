@@ -15,7 +15,9 @@ class GDriveClient:
     and advanced deletion logic including pagination and prefix filtering.
     """
 
-    def __init__(self, credentials_path: str, token_path: str) -> None:
+    def __init__(
+            self, credentials_path: Optional[str] = None, token_path: Optional[str] = None
+    ) -> None:
         """
         Initializes the GDriveClient and authenticates the service.
 
@@ -23,8 +25,12 @@ class GDriveClient:
             credentials_path (str): Path to the credentials.json file.
             token_path (str): Path to the token.json file.
         """
-        self.credentials_path: str = credentials_path
-        self.token_path: str = token_path
+        self.credentials_path: str = credentials_path or os.getenv(
+            "GDRIVE_CREDENTIALS_PATH", "credentials.json"
+        )
+        self.token_path: str = token_path or os.getenv(
+            "GDRIVE_TOKEN_PATH", "token.json"
+        )
         self.scopes: List[str] = ["https://www.googleapis.com/auth/drive"]
 
         # Default folder ID from environment for fallback
@@ -38,6 +44,10 @@ class GDriveClient:
         Returns:
             Resource: An authorized Google Drive API service object.
         """
+        if not os.path.exists(self.credentials_path):
+            raise FileNotFoundError(
+                f"Credentials file missing at: {self.credentials_path}"
+            )
         creds = get_google_service_credentials(
             self.credentials_path, self.token_path, self.scopes
         )
@@ -97,7 +107,7 @@ class GDriveClient:
         return len(results.get("files", [])) > 0
 
     def _fetch_files(
-        self, query: str, fields: str = "id, name"
+            self, query: str, fields: str = "id, name"
     ) -> List[Dict[str, str]]:
         """
         Internal helper to fetch all files matching a query, handling pagination.
@@ -132,9 +142,11 @@ class GDriveClient:
 
         return all_files
 
-    def list_files(self, folder_id: str) -> List[Dict[str, str]]:
+    def list_files(
+            self, folder_id: Optional[str] = None, limit: int = 10
+    ) -> List[Dict[str, str]]:
         """
-        Lists ALL files within a specific folder, handling large folders (pagination).
+        Lists files. If folder_id is None, it lists files from the root or generic drive access (useful for health checks).
 
         Args:
             folder_id (str): The ID of the folder to inspect.
@@ -142,8 +154,17 @@ class GDriveClient:
         Returns:
             List[Dict[str, str]]: A list of dictionaries containing 'id' and 'name'.
         """
-        query: str = f"'{folder_id}' in parents and trashed = false"
-        return self._fetch_files(query)
+        query: str = "trashed = false"
+        if folder_id or self.output_folder_id:
+            target: str = folder_id or self.output_folder_id or ""
+            query += f" and '{target}' in parents"
+
+        results = (
+            self.service.files()
+            .list(q=query, spaces="drive", fields="files(id, name)", pageSize=limit)
+            .execute()
+        )
+        return results.get("files", [])
 
     def _list_and_delete(self, query: str) -> List[str]:
         """
