@@ -1,8 +1,8 @@
 # Git Conventions
 
-To ensure traceability across the Automation Ecosystem, we follow these manual standards.
+To ensure traceability across the Automation Ecosystem, we follow these standardized manual rules.
 
-## Branch Naming
+## 🌿 Branch Naming
 
 Format: `<type>/<short-description>`
 
@@ -13,7 +13,27 @@ Format: `<type>/<short-description>`
 | `maint/`    | Documentation and repository maintenance. |
 | `research/` | Jupyter Notebooks and AI experiments.     |
 
-## Commit Messages
+## 💬 Commit Messages
 
-Use descriptive titles. If an issue exists, link it:
-`feat: add spotify client auth logic (closes #12)`
+Use descriptive titles in English. If an issue exists, link it:
+`feat: add gdrive client download logic (closes #12)`
+
+### Guidelines:
+
+- Use the imperative mood ("add", not "added").
+- Keep the subject line under 50 characters.
+- Reference internal issues using `(closes #ID)`.
+
+## 💎 Code Quality Gate
+
+Before pushing any branch, you must ensure the code passes the local quality suite to avoid CI failures.
+
+```bash
+  make quality
+```
+
+This command (defined in the root Makefile) executes:
+
+1. **Linting**: Ruff (Formatting & Logic).
+2. **Security**: Bandit (SAST) & Pip-audit (Vulnerabilities).
+3. **Tests**: Pytest suite.

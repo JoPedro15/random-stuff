@@ -1,14 +1,21 @@
 # 🧩 Automation Hub Monorepo
 
-[![Main CI](https://github.com/JoPedro15/automation-hub/actions/workflows/main.ci.yml/badge.svg)](https://github.com/JoPedro15/automation-hub/actions)
-![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
-![Security: Bandit](https://img.shields.io/badge/security-bandit-green)
-![Security: pip--audit](https://img.shields.io/badge/security-pip--audit-green)
-![License](https://img.shields.io/badge/license-MIT-green)
+<div style="text-align: center;">
+    <img src="https://img.shields.io/badge/python-3.12-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.12" />
+  <img src="https://github.com/JoPedro15/automation-hub/actions/workflows/ci-pipeline.yml/badge.svg?branch=main" alt="CI Quality Pipeline" />
+  <img src="https://github.com/JoPedro15/automation-hub/actions/workflows/infrastructure-health.yml/badge.svg" alt="Infrastructure Health" />
+  <br />
+
+  <img src="https://img.shields.io/badge/linter-Ruff-000000?style=flat-square&logo=python&logoColor=white" alt="Ruff" />
+  <img src="https://img.shields.io/badge/security-Bandit%20%7C%20Audit-44cc11?style=flat-square&logo=shield&logoColor=white" alt="Security" />
+  <img src="https://img.shields.io/badge/stack-Monorepo-orange?style=flat-square&logo=git" alt="Monorepo" />
+</div>
+
+## 🚀 Overview
 
 A professional monorepo for modular Python services and automated workflows.
 
-This repository follows **Monorepo Best Practices**, strictly separating
+This repository acts as the **Single Source of Truth (SSoT)** for our automation ecosystem, strictly separating
 infrastructure (clients) from business logic (projects).
 
 ---
@@ -28,6 +35,12 @@ The repository is organized into distinct layers to ensure scalability and code 
 
 ## 🔌 Standardized Client Architecture
 
+Every client in `clients/` in this ecosystem is treated as an independent module:
+
+1. Internal logic is hidden in submodules.
+2. Main interface is exposed via `__init__.py`.
+3. Independent testing suite and `pyproject.toml`.
+
 Every client under the clients/ directory follows a predictable, industrial-grade pattern to ensure maintainability:
 
 ```text
@@ -43,12 +56,52 @@ clients/
     └── pyproject.toml      # Build system and tool configuration
 ```
 
-## 🔌 Available Clients
+For detailed implementation, usage examples, and API methods, refer to the specific documentation:
 
-### Spotify Client
+- **[Google Drive Client Documentation](./clients/gdrive/README.md)**
 
-* **Purpose**: Integration with Spotify Web API.
-* **Status**: Fully operational with OAuth2 support and CI testing.
+---
+
+## 🛠️ Tooling & Quality Gates
+
+We enforce high-quality standards through a centralized **GNU Make** automation system, ensuring parity between local
+development and CI/CD pipelines.
+
+### 1️⃣ Environment & Security Orchestration
+
+The `make setup` command is our "Single Source of Truth" for environment health:
+
+- **Automation**: Creates a Python 3.12 virtual environment and installs dependencies.
+- **Safety**: Automatically triggers a security audit and configures **pre-commit hooks** to enforce standards locally.
+
+### 2️⃣ Integrated Security & Quality Scanning
+
+We integrate professional-grade tools to secure our research and code:
+
+* **Static Analysis (SAST)**: `Bandit` scans for insecure patterns.
+* **Vulnerability Audit**: `pip-audit` checks the dependency tree for known CVEs.
+* **Unified Linting**: `Ruff` handles formatting, imports sorting, and logic linting in a single pass.
+
+### 🛠️ Automation Commands
+
+We use **GNU Make** to orchestrate quality gates across the monorepo:
+
+| Command         | Description                                                           |
+|:----------------|:----------------------------------------------------------------------|
+| `make setup`    | Initializes environment, installs deps, and sets up pre-commit hooks. |
+| `make quality`  | The full gate: Runs Ruff (Lint/Fmt), Security scans, and Tests.       |
+| `make security` | Specifically triggers Bandit and pip-audit scans.                     |
+| `make test`     | Executes pytest across all active clients and projects.               |
+| `make clean`    | Purges all caches (`__pycache__`, `.pytest_cache`) and artifacts.     |
+
+---
+
+## 📖 Governance & Standards
+
+This repository serves as the core governance center for all related automation projects.
+
+- 🏛️ [Layered System](./docs/architecture/layered-system.md): Deep dive into our modular architecture.
+- 🌿 [Git Conventions](./docs/standards/git-conventions.md): Branch naming and commit standards.
 
 ### Google Drive Client
 
@@ -61,54 +114,11 @@ clients/
 
 ---
 
-## 🛠️ Tooling & Quality Gates
-
-We enforce high-quality standards through a centralized **GNU Make** automation system.
-
-### 1️⃣ Environment & Security Orchestration
-
-The **make setup** command is the "Single Source of Truth" for environment health:
-
-```bash
-make setup      # Creates VENV, installs dependencies, and runs Security Audits
-source .venv/bin/activate
-```
-
-### 2️⃣ Integrated Security Scanning
-
-We don't just write code; we secure it. Our setup includes:
-
-* **Static Analysis (SAST)**: Using Bandit to detect insecure patterns (e.g., eval, shell=True).
-* **Dependency Auditing**: Using pip-audit to scan for known vulnerabilities (CVEs) in third-party libraries.
-
-### 3️⃣ Quality Commands
-
-### 🛠️ Automation Commands
-
-The project uses `make` to orchestrate quality gates and testing. Below are the primary commands available from the root
-directory:
-
-| Command         | Description                                                                        |
-|:----------------|:-----------------------------------------------------------------------------------|
-| `make test-all` | Runs integration tests across all clients (GDrive, Spotify).                       |
-| `make security` | Triggers a full security scan (Bandit & pip-audit) excluding virtual environments. |
-| `make lint-all` | Runs static code analysis via **Ruff** to ensure code quality.                     |
-| `make fmt-all`  | Standardizes code style using **Black** and **Isort**.                             |
-| `make clean`    | Purges all caches (`__pycache__`, `.pytest_cache`) and local test artifacts.       |
-
-## ⚖️ Governance & Architecture
-
-To maintain consistency as an Automation Engineer, this repository serves as the **Single Source of Truth (SSoT)** for
-our ecosystem standards.
-
-### 📜 Standards
-
-* **[Issue Standardization](./docs/standards/issue-standardization.md)**: Standardized workflow for managing work items
-  across repositories.
-* **[Git Conventions](./docs/standards/git-conventions.md)**: Manual branch naming conventions (`feat/`, `bug/`, etc.)
-  and commit message standards.
-
-### 🏗️ Architecture
-
-* **[Layered System](./docs/architecture/layered-system.md)**: Deep dive into our modular architecture (Clients,
-  Projects, Common, and Tooling layers).
+<div style="text-align: center;">
+  <p>
+    <strong>João Pedro Silva</strong> | Automation Engineer <br />
+    <a href="https://github.com/JoPedro15">GitHub</a> • 
+    <a href="https://github.com/JoPedro15/automation-hub">Automation Hub</a> • 
+    <a href="https://github.com/JoPedro15/ai-lab">AI Lab</a>
+  </p>
+</div>
