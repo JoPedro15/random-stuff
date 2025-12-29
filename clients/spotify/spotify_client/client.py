@@ -65,7 +65,9 @@ class SpotifyClient:
         self.logger = setup(name=logger_name)
 
         if not self.client_id or not self.client_secret or not self.auth_url:
-            raise SystemError("Missing Spotify credentials or auth.py URL in environment.")
+            raise SystemError(
+                "Missing Spotify credentials or auth.py URL in environment."
+            )
 
         # Token cache
         self._access_token: Optional[str] = None
@@ -184,7 +186,9 @@ class SpotifyClient:
         headers = self._auth_headers()
 
         search_album = requests.get(
-            f"{self.api_base_url}/albums/{album_id}", headers=headers, timeout=self.timeout
+            f"{self.api_base_url}/albums/{album_id}",
+            headers=headers,
+            timeout=self.timeout,
         )
 
         if search_album.status_code != 200:
