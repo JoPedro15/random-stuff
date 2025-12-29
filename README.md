@@ -107,3 +107,4 @@ ______________________________________________________________________
 <br />
 [GitHub](https://github.com/JoPedro15) • [Automation Hub](https://github.com/JoPedro15/automation-hub) • [AI Lab](https://github.com/JoPedro15/ai-lab)
 <br />
+<div style="text-align: center;">Centered text</div>
