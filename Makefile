@@ -1,7 +1,17 @@
+# Detect if running in GitHub Actions
+CI ?= false
+
 # Variables
 VENV        := .venv
-PY          := $(VENV)/bin/python
-PIP         := $(PY) -m pip
+ifeq ($(CI), true)
+    PY      := python3
+    PIP     := pip
+else
+    PY      := $(VENV)/bin/python
+    PIP     := $(VENV)/bin/pip
+endif
+
+VENV        := .venv
 REQ_DEV     := requirements.txt
 
 # Client directories
