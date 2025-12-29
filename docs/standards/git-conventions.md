@@ -22,7 +22,6 @@ Use descriptive titles in English. If an issue exists, link it:
 
 - Use the imperative mood ("add", not "added").
 - Keep the subject line under 50 characters.
-- Reference internal issues using `(closes #ID)`.
 
 ## 💎 Code Quality Gate
 

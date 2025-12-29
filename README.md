@@ -31,8 +31,6 @@ The repository is organized into distinct layers to ensure scalability and code 
 | **Common**   | `common/`   | Shared utilities (Auth helpers, Logging) reused across the repo.            |
 | **Tooling**  | `tooling/`  | Centralized automation rules and CI/CD configurations.                      |
 
----
-
 ## 🔌 Standardized Client Architecture
 
 Every client in `clients/` in this ecosystem is treated as an independent module:
@@ -59,8 +57,6 @@ clients/
 For detailed implementation, usage examples, and API methods, refer to the specific documentation:
 
 - **[Google Drive Client Documentation](./clients/gdrive/README.md)**
-
----
 
 ## 🛠️ Tooling & Quality Gates
 
@@ -94,8 +90,6 @@ We use **GNU Make** to orchestrate quality gates across the monorepo:
 | `make test`     | Executes pytest across all active clients and projects.               |
 | `make clean`    | Purges all caches (`__pycache__`, `.pytest_cache`) and artifacts.     |
 
----
-
 ## 📖 Governance & Standards
 
 This repository serves as the core governance center for all related automation projects.
@@ -111,8 +105,6 @@ This repository serves as the core governance center for all related automation 
     * **Security-First Deletion**: Supports strict prefix-based cleanup (test_*) and full folder purging.
     * **Resilient IO**: Implements Google's resumable media upload protocol for large file stability.
     * **Full Lifecycle Testing**: Integrated suite covering the entire CRUD flow.
-
----
 
 <div style="text-align: center;">
   <p>
