@@ -95,3 +95,20 @@ directory:
 | `make lint-all` | Runs static code analysis via **Ruff** to ensure code quality.                     |
 | `make fmt-all`  | Standardizes code style using **Black** and **Isort**.                             |
 | `make clean`    | Purges all caches (`__pycache__`, `.pytest_cache`) and local test artifacts.       |
+
+## ⚖️ Governance & Architecture
+
+To maintain consistency as an Automation Engineer, this repository serves as the **Single Source of Truth (SSoT)** for
+our ecosystem standards.
+
+### 📜 Standards
+
+* **[Issue Standardization](./docs/standards/issue-standardization.md)**: Standardized workflow for managing work items
+  across repositories.
+* **[Git Conventions](./docs/standards/git-conventions.md)**: Manual branch naming conventions (`feat/`, `bug/`, etc.)
+  and commit message standards.
+
+### 🏗️ Architecture
+
+* **[Layered System](./docs/architecture/layered-system.md)**: Deep dive into our modular architecture (Clients,
+  Projects, Common, and Tooling layers).
