@@ -82,18 +82,14 @@ jobs:
 
       - name: Run Health Check
         env:
-          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
-          GDRIVE_TOKEN_DATA: ${{ secrets.GDRIVE_TOKEN_JSON }}
+          RAW_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
+          RAW_TOKEN: ${{ secrets.GDRIVE_TOKEN_JSON }}
           GDRIVE_CREDENTIALS_PATH: "clients/gdrive/data/credentials.json"
           GDRIVE_TOKEN_PATH: "clients/gdrive/data/token.json"
           PYTHONPATH: ${{ github.workspace }}
         run: |
           mkdir -p clients/gdrive/data
-          cat << 'EOF' > clients/gdrive/data/credentials.json
-          ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
-          EOF
-          
-          cat << 'EOF' > clients/gdrive/data/token.json
-          ${{ secrets.GDRIVE_TOKEN_JSON }}
-          EOF
+          echo "$RAW_CREDENTIALS" > clients/gdrive/data/credentials.json
+          echo "$RAW_TOKEN" > clients/gdrive/data/token.json
+          [ -s clients/gdrive/data/credentials.json ] || { echo "ERROR: Credentials file is empty"; exit 1; }
           make health CI=true
