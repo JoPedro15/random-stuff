@@ -104,11 +104,13 @@ This repository serves as the core governance center for all related automation 
     * **Resilient IO**: Implements Google's resumable media upload protocol for large file stability.
     * **Full Lifecycle Testing**: Integrated suite covering the entire CRUD flow.
 
-<div style="text-align: center;">
+______________________________________________________________________
+
+<div align="center">
   <p>
     <strong>João Pedro Silva</strong> | Automation Engineer <br />
-    <a href="https://github.com/JoPedro15">GitHub</a> • 
-    <a href="https://github.com/JoPedro15/automation-hub">Automation Hub</a> • 
+    <a href="https://github.com/JoPedro15">GitHub</a> •
+    <a href="https://github.com/JoPedro15/automation-hub">Automation Hub</a> •
     <a href="https://github.com/JoPedro15/ai-lab">AI Lab</a>
   </p>
 </div>
