@@ -23,6 +23,7 @@ Returns:
     logging.Logger: Configured logger instance.
 """
 
+
 def setup(level: int = logging.INFO, name: str = None) -> logging.Logger:
     logger = logging.getLogger(name)
     if not logger.handlers:
