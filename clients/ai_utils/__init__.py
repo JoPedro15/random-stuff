@@ -1,1 +1,3 @@
-from .data_processor import encode_categorical_features as encode_categorical_features
+from .ai_utils_client.data_processor_client import (
+    DataProcessorClient as DataProcessorClient,
+)
