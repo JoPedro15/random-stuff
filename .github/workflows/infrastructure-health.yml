@@ -2,7 +2,7 @@ name: Infrastructure Health Check
 
 on:
   schedule:
-    - cron: '22 11 * * 2'
+    - cron: '0 20 * * 5'
   workflow_dispatch:
 
 jobs:
