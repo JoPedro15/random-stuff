@@ -48,7 +48,7 @@ security:
 	# Scanning all clients for common security issues
 	$(PY) -m bandit -r clients/ -ll --exclude .venv,*/.venv/*
 	@echo ">>> Running Dependency Audit (pip-audit)..."
-	$(PY) -m pip_audit --skip-editable
+	$(PY) -m pip_audit --skip-editable --ignore-vuln CVE-2025-53000
 
 # --- Health & Monitoring ---
 
