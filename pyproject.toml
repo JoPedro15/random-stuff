@@ -37,4 +37,4 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 # Isto garante que o pip encontra as pastas clients e common na raiz
-include = ["clients*", "common*"]
+include = ["clients", "common*"]
