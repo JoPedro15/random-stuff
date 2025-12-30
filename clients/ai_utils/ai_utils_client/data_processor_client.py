@@ -19,7 +19,7 @@ class DataProcessorClient:
         pass
 
     def encode_categorical_features(
-            self, df: pd.DataFrame, columns: List[str], drop_first: bool = True
+        self, df: pd.DataFrame, columns: List[str], drop_first: bool = True
     ) -> pd.DataFrame:
         """
         Encodes categorical features using One-Hot Encoding (Dummy Encoding).
@@ -43,7 +43,7 @@ class DataProcessorClient:
         return pd.get_dummies(df, columns=existing_cols, drop_first=drop_first)
 
     def handle_missing_values(
-            self, df: pd.DataFrame, strategy: str = "drop"
+        self, df: pd.DataFrame, strategy: str = "drop"
     ) -> pd.DataFrame:
         """
         Example of a future method to maintain consistency with the GDrive template.

@@ -1,1 +1,1 @@
-from .data_processor_client import DataProcessorClient
+from .data_processor_client import DataProcessorClient as DataProcessorClient
