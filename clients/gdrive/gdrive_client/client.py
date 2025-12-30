@@ -18,7 +18,7 @@ class GDriveClient:
     """
 
     def __init__(
-        self, credentials_path: Optional[str] = None, token_path: Optional[str] = None
+            self, credentials_path: Optional[str] = None, token_path: Optional[str] = None
     ) -> None:
         """
         Initializes the GDriveClient with robust path resolution for both
@@ -32,13 +32,13 @@ class GDriveClient:
         # Using parent.parent to go from 'gdrive_client' to 'gdrive' folder
         default_creds: str = str(base_dir.parent / "data" / "credentials.json")
         self.credentials_path: str = (
-            credentials_path or os.getenv("GDRIVE_CREDENTIALS_PATH") or default_creds
+                credentials_path or os.getenv("GDRIVE_CREDENTIALS_PATH") or default_creds
         )
 
         # 3. Resolve Token Path (Argument > Env Var > Default Hub Path)
         default_token: str = str(base_dir.parent / "data" / "token.json")
         self.token_path: str = (
-            token_path or os.getenv("GDRIVE_TOKEN_PATH") or default_token
+                token_path or os.getenv("GDRIVE_TOKEN_PATH") or default_token
         )
 
         # 4. Critical Path Validation
@@ -125,7 +125,7 @@ class GDriveClient:
         return len(results.get("files", [])) > 0
 
     def _fetch_files(
-        self, query: str, fields: str = "id, name"
+            self, query: str, fields: str = "id, name"
     ) -> List[Dict[str, str]]:
         """
         Internal helper to fetch all files matching a query, handling pagination.
@@ -162,35 +162,47 @@ class GDriveClient:
 
     def download_file(self, file_id: str, local_path: str) -> None:
         """
-        Downloads a file from Google Drive to a local destination.
-
-        Args:
-            file_id (str): The unique Google Drive File ID.
-            local_path (str): The local path (including filename)
-            where the file will be saved.
+        Downloads a file from Google Drive.
+        Handles both binary files and Google Docs Editor files (via export).
         """
-        # 1. Create the request to get the file media content
-        request = self.service.files().get_media(fileId=file_id)
+        # 1. First, fetch metadata to check the MIME type
+        file_metadata: dict = (
+            self.service.files().get(fileId=file_id, fields="mimeType, name").execute()
+        )
 
-        # 2. Setup the local file stream
-        file_stream: io.FileIO = io.FileIO(local_path, "wb")
+        mime_type: str = file_metadata.get("mimeType", "")
+        print(f">>> 🔎 Detected MIME type: {mime_type}")
 
-        # 3. Initialize the downloader
-        downloader: MediaIoBaseDownload = MediaIoBaseDownload(file_stream, request)
+        request = None
+        # 2. Decide between Download or Export
+        if "vnd.google-apps" in mime_type:
+            # It's a Google Doc/Sheet/Slide - Need to export
+            # For Google Sheets, we export to XLSX (suitable for pandas)
+            export_mime: str = (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            print(f">>> 🔄 Exporting Google Editor file to {export_mime}...")
+            request = self.service.files().export_media(
+                fileId=file_id, mimeType=export_mime
+            )
+        else:
+            # It's a binary file - Standard download
+            print(f">>> 📥 Downloading binary file...")
+            request = self.service.files().get_media(fileId=file_id)
 
-        print(f"⏳ Starting download of file ID: {file_id}")
-
-        # 4. Execute the download in chunks
+        # 3. Perform the actual data transfer
+        fh = io.FileIO(local_path, "wb")
+        downloader: MediaIoBaseDownload = MediaIoBaseDownload(fh, request)
         done: bool = False
         while not done:
             status, done = downloader.next_chunk()
             if status:
-                print(f"📥 Download progress: {int(status.progress() * 100)}%")
+                print(f">>> ⏳ Progress: {int(status.progress() * 100)}%")
 
         print(f"✅ File successfully saved to: {local_path}")
 
     def list_files(
-        self, folder_id: Optional[str] = None, limit: int = 10
+            self, folder_id: Optional[str] = None, limit: int = 10
     ) -> List[Dict[str, str]]:
         """
         Lists files. If folder_id is None, it lists files from the root
