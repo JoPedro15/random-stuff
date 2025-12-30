@@ -2,10 +2,9 @@ import io
 import os
 from typing import Any, Dict, List, Optional
 
+from clients.gdrive.gdrive_client.auth import get_google_service_credentials
 from googleapiclient.discovery import Resource, build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-
-from clients.gdrive.gdrive_client.auth import get_google_service_credentials
 
 
 class GDriveClient:
@@ -264,5 +263,7 @@ class GDriveClient:
             print("⚠️ Skipping deletion: folder_id or prefix missing.")
             return []
 
-        query: str = f"'{folder_id}' in parents and trashed = false and name startswith '{file_prefix}'"
+        query: str = (
+            f"'{folder_id}' in parents and trashed = false and name startswith '{file_prefix}'"
+        )
         return self._list_and_delete(query)
