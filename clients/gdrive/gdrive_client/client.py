@@ -2,11 +2,9 @@ import io
 import os
 from typing import Any, Dict, List, Optional
 
-from googleapiclient.discovery import Resource, build
-from googleapiclient.http import MediaFileUpload
-from googleapiclient.http import MediaIoBaseDownload
-
 from clients.gdrive.gdrive_client.auth import get_google_service_credentials
+from googleapiclient.discovery import Resource, build
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 
 class GDriveClient:
@@ -18,7 +16,7 @@ class GDriveClient:
     """
 
     def __init__(
-            self, credentials_path: Optional[str] = None, token_path: Optional[str] = None
+        self, credentials_path: Optional[str] = None, token_path: Optional[str] = None
     ) -> None:
         """
         Initializes the GDriveClient and authenticates the service.
@@ -109,7 +107,7 @@ class GDriveClient:
         return len(results.get("files", [])) > 0
 
     def _fetch_files(
-            self, query: str, fields: str = "id, name"
+        self, query: str, fields: str = "id, name"
     ) -> List[Dict[str, str]]:
         """
         Internal helper to fetch all files matching a query, handling pagination.
@@ -173,7 +171,7 @@ class GDriveClient:
         print(f"✅ File successfully saved to: {local_path}")
 
     def list_files(
-            self, folder_id: Optional[str] = None, limit: int = 10
+        self, folder_id: Optional[str] = None, limit: int = 10
     ) -> List[Dict[str, str]]:
         """
         Lists files. If folder_id is None, it lists files from the root or generic drive access (useful for health checks).
