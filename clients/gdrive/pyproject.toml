@@ -24,6 +24,8 @@ packages = ["gdrive_client"]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+# Select rules: E (Error), F (Pyflakes), I (Isort)
+select = ["E", "F", "I"]
 fix = true
 
 [tool.ruff.lint]
@@ -34,6 +36,10 @@ ignore = ["E501"] # Formatting handles line length
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.ruff.isort]
+# Specific configuration for import sorting
+known-first-party = ["clients"]
 
 # ─────────────────────────────────────────────────────────────
 # Pytest configuration
