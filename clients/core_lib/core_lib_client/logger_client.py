@@ -9,32 +9,32 @@ class Logger:
     Provides clean, professional terminal output without icons or emojis.
     """
 
-    HEADER: Final[str] = '\033[95m'
-    BLUE: Final[str] = '\033[94m'
-    GREEN: Final[str] = '\033[92m'
-    WARNING: Final[str] = '\033[93m'
-    FAIL: Final[str] = '\033[91m'
-    ENDC: Final[str] = '\033[0m'
-    BOLD: Final[str] = '\033[1m'
+    _HEADER: Final[str] = '\033[95m'
+    _BLUE: Final[str] = '\033[94m'
+    _GREEN: Final[str] = '\033[92m'
+    _WARNING: Final[str] = '\033[93m'
+    _FAIL: Final[str] = '\033[91m'
+    _ENDC: Final[str] = '\033[0m'
+    _BOLD: Final[str] = '\033[1m'
 
     @staticmethod
     def _get_timestamp() -> str:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def info(self, message: str) -> None:
-        print(f"[{self._get_timestamp()}] {self.BLUE}INFO:{self.ENDC} {message}")
+        print(f"[{self._get_timestamp()}] {self._BLUE}INFO:{self._ENDC} {message}")
 
     def success(self, message: str) -> None:
-        print(f"[{self._get_timestamp()}] {self.GREEN}SUCCESS:{self.ENDC} {message}")
+        print(f"[{self._get_timestamp()}] {self._GREEN}SUCCESS:{self._ENDC} {message}")
 
     def warning(self, message: str) -> None:
-        print(f"[{self._get_timestamp()}] {self.WARNING}WARNING:{self.ENDC} {message}")
+        print(f"[{self._get_timestamp()}] {self._WARNING}WARNING:{self._ENDC} {message}")
 
     def error(self, message: str) -> None:
-        print(f"[{self._get_timestamp()}] {self.FAIL}ERROR:{self.ENDC} {message}", file=sys.stderr)
+        print(f"[{self._get_timestamp()}] {self._FAIL}ERROR:{self._ENDC} {message}", file=sys.stderr)
 
     def section(self, title: str) -> None:
-        print(f"\n{self.BOLD}{self.HEADER}--- {title.upper()} ---{self.ENDC}")
+        print(f"\n{self._BOLD}{self._HEADER}--- {title.upper()} ---{self._ENDC}")
 
 
 logger: Logger = Logger()
