@@ -22,7 +22,7 @@ class Logger:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def info(self, message: str) -> None:
-        print(f"[{self._get_timestamp()}] {self._BLUE}INFO:{self._ENDC} {message}")
+        print(f"[{self._get_timestamp()}] INFO: {message}")
 
     def success(self, message: str) -> None:
         print(f"[{self._get_timestamp()}] {self._GREEN}SUCCESS:{self._ENDC} {message}")
@@ -34,7 +34,7 @@ class Logger:
         print(f"[{self._get_timestamp()}] {self._FAIL}ERROR:{self._ENDC} {message}", file=sys.stderr)
 
     def section(self, title: str) -> None:
-        print(f"\n{self._BOLD}{self._HEADER}--- {title.upper()} ---{self._ENDC}")
+        print(f"\n{self._get_timestamp()}{self._BOLD}{self._HEADER}{title.upper()}{self._ENDC}")
 
     def print(self, message: str, color: Optional[str] = None) -> None:
         """Raw print replacement. No timestamp, no prefix. Optional color."""
