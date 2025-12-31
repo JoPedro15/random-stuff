@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import Final
+from typing import Final, Optional
 
 
 class Logger:
@@ -35,6 +35,12 @@ class Logger:
 
     def section(self, title: str) -> None:
         print(f"\n{self._BOLD}{self._HEADER}--- {title.upper()} ---{self._ENDC}")
+
+    def print(self, message: str, color: Optional[str] = None) -> None:
+        """Raw print replacement. No timestamp, no prefix. Optional color."""
+        c = color if color else ""
+        end = self._ENDC if color else ""
+        print(f"{c}{message}{end}")
 
 
 logger: Logger = Logger()
