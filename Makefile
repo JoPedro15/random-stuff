@@ -3,9 +3,9 @@ CI ?= false
 
 # Variables
 VENV           := .venv
+CORE_LIB_DIR   := clients/core_lib
 AI_UTILS_DIR   := clients/ai_utils
 GDRIVE_DIR     := clients/gdrive
-SPOTIFY_DIR    := clients/spotify
 
 ifeq ($(CI), true)
     PY      := python3
@@ -38,15 +38,17 @@ setup:
 update-deps:
 	@echo ">>> 📦 Updating development requirements from $(REQ_DEV)..."
 	$(PIP) install -U -r $(REQ_DEV)
-	@echo ">>> Installing clients in editable mode..."
+	@echo ">>> 🏗️ Installing Core Foundation (core-lib)..."
+	$(PIP) install -e $(CORE_LIB_DIR)
+	@echo ">>> 🚀 Installing Domain Clients..."
 	$(PIP) install -e $(GDRIVE_DIR)
 	$(PIP) install -e $(AI_UTILS_DIR)
 
 # Sanity check to ensure TOML dependencies (like openpyxl) were actually installed
 verify-env:
 	@echo ">>> 🔍 Verifying environment integrity..."
-	@$(PY) -c "import openpyxl; import pandas; import ai_utils_client; print('>>> ✨ Integrity Check Passed: All packages found.')" || \
-	(echo ">>> ❌ Integrity Check Failed: Missing dependencies. Check your pyproject.toml files." && exit 1)
+	@$(PY) -c "import openpyxl; import pandas; import core_lib_client; import ai_utils_client; print('>>> ✨ Integrity Check Passed: All packages found.')" || \
+    (echo ">>> ❌ Integrity Check Failed: Missing dependencies. Check your pyproject.toml files." && exit 1)
 
 # --- Security (The Shield) ---
 
@@ -61,10 +63,8 @@ security:
 
 health:
 	@echo ">>> Running Global Health Checks..."
-	@export PYTHONPATH=.:$(PYTHONPATH) && \
-     export GDRIVE_CREDENTIALS_PATH="clients/gdrive/data/credentials.json" && \
-     export GDRIVE_TOKEN_PATH="clients/gdrive/data/token.json" && \
-     $(PY) scripts/global_health_check.py
+    	@export PYTHONPATH=.:$(PYTHONPATH) && \
+    	 $(PY) scripts/global_health_check.py
 
 # --- Linting & Formatting (Universal & Fast) ---
 
