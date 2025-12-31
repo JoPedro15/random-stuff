@@ -22,7 +22,7 @@ class Logger:
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def info(self, message: str) -> None:
-        print(f"[{self._get_timestamp()}] {self._BLUE}INFO:{self._ENDC} {message}")
+        print(f"[{self._get_timestamp()}] INFO: {message}")
 
     def success(self, message: str) -> None:
         print(f"[{self._get_timestamp()}] {self._GREEN}SUCCESS:{self._ENDC} {message}")
