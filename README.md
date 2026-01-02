@@ -52,6 +52,8 @@ clients/
   isolation or as part of the global pipeline.
 - **Security Isolation**: Credentials and local caches are stored in an isolated `data/` folder within each client,
   ensuring secrets never leave their specific context.
+- **Silent Testing**: Pytest is pre-configured to suppress third-party **DeprecationWarnings**
+  (e.g., Google API/httplib2), ensuring developers focus only on actionable infrastructure logs.
 
 ## 🔌 Core Infrastructure Modules
 
@@ -96,10 +98,10 @@ Our **5-Step Orchestrator** ensures a healthy environment:
 
 The mandatory gate before any push. It executes:
 
-- **Ruff**: Atomic linting and formatting (Scripts & Notebooks).
-- **Pre-commit**: Validates AST, YAML syntax, and large file blocks.
-- **Security**: Runs `Bandit` and `pip-audit` for vulnerability detection.
-- **Tests**: Executes the full `pytest` suite across all clients.
+- **Ruff**: Unified engine for linting, formatting, and Security SAST (Bandit rules) across Scripts & Notebooks.
+- **Pre-commit**: Validates AST, YAML syntax, and strict No-Print policies.
+- **Security Audit**: Runs \`pip-audit to scan dependencies for known vulnerabilities (CVEs).
+- **Tests**: Executes the full `pytest` suite with automated warning suppression for clean logs.
 
 ## 📖 Governance & Standards
 
