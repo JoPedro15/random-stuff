@@ -1,3 +1,4 @@
+# ai_utils_client/data_ingestor_client.py
 import os
 
 import pandas as pd
@@ -21,7 +22,16 @@ class DataIngestorClient:
             gdrive_client: An instance of GDriveClient.
             If None, a new one will be created.
         """
-        self.gdrive: GDriveClient = gdrive_client or GDriveClient()
+
+        if gdrive_client:
+            self.gdrive = gdrive_client
+        else:
+            # SSoT: Getting credentials path from environment or default location
+            creds_path: str = os.getenv(
+                "GOOGLE_CREDENTIALS_PATH", "data/credentials.json"
+            )
+            # The client now requires at least the credentials_path
+            self.gdrive = GDriveClient(credentials_path=creds_path)
 
     def get_spreadsheet_data(
         self,
