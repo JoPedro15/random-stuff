@@ -6,7 +6,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch: { } # Allows manual trigger from GitHub UI
+  workflow_dispatch: { }
 
 permissions:
   contents: read
@@ -16,54 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # SECURITY LAYER: Mandatory gate for all PRs
-  security-scan:
-    name: Security Analysis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install Security Tools
-        run: pip install bandit pip-audit
-
-      - name: Static Analysis (SAST)
-        # Scans for security vulnerabilities in all client code
-        run: bandit -r clients/ -ll
-
-      - name: Dependency Audit
-        # Audits both clients for vulnerable packages
-        run: |
-          pip-audit clients/gdrive/
-
-  # CHANGES DETECTION: Intelligent path filtering for Monorepo efficiency
-  changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      gdrive: ${{ steps.filter.outputs.gdrive }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Filter Paths
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            gdrive:
-              - 'clients/gdrive/**'
-
-  # GDRIVE JOB: Execution conditioned by changes
-  gdrive-client:
-    name: GDrive Quality
-    needs: [ security-scan, changes ]
-    if: ${{ needs.changes.outputs.gdrive == 'true' }}
+  quality-gate:
+    name: Global Quality & Security
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -75,17 +29,101 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Create credentials file
+      - name: Environment Setup
+        # Orchestrates venv and editable installs
         run: |
-          mkdir -p data
-          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > data/credentials.json
+          python -m venv .venv
+          source .venv/bin/activate
+          make setup CI=true
 
-      - name: Lint and Unit Tests
+      - name: Lint & Static Analysis
+        # Checks logic, imports and potential bugs via Ruff
+        run: |
+          source .venv/bin/activate
+          ruff check .
+
+      - name: Formatting Check
+        # Validates if code follows the project style (Ruff format)
+        run: |
+          source .venv/bin/activate
+          ruff format . --check
+
+      - name: Security SAST (Bandit)
+        # Analyzes the codebase for security vulnerabilities
+        run: |
+          source .venv/bin/activate
+          ruff check . --select S
+
+      - name: Infrastructure Health
+        # Validates internal client mapping and imports
+        run: |
+          source .venv/bin/activate
+          make verify-env
+
+      - name: Dependency Audit
+        # Scans for known vulnerabilities in external libraries
+        run: |
+          source .venv/bin/activate
+          make security
+
+  # CHANGES DETECTION: Identify which clients need testing
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      gdrive: ${{ steps.filter.outputs.gdrive }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Filter Paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gdrive:
+              - 'clients/gdrive/**'
+
+  # GDrive Job: Specific validations when changes are detected
+  gdrive-tests:
+    name: GDrive Integration Tests
+    needs: [ quality-gate, changes ]
+    if: ${{ needs.changes.outputs.gdrive == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Environment
+        # Uses the SSoT (Makefile) to build the venv and link internal clients
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          make setup CI=true
+
+      - name: Initialize Google Credentials
+        # Reconstructs the security environment for API communication
+        run: |
+          mkdir -p clients/gdrive/data
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > clients/gdrive/data/credentials.json
+
+      - name: Run GDrive Unit Tests
+        # Logic validation: Runs fast tests that don't call the external API
+        run: |
+          source .venv/bin/activate
+          # Skips tests marked as integration to provide immediate feedback on logic
+          pytest clients/gdrive/tests -m "not integration"
+
+      - name: Run GDrive Integration Tests
+        # Infrastructure validation: Real communication with Google API
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          pip install -e ./clients/gdrive
-          pip install pytest ruff black
-          ruff check clients/gdrive
-          python -m pytest clients/gdrive/tests -m "not integration" || [ $? -eq 5 ]
+          source .venv/bin/activate
+          # Only runs tests that interact with real Google Drive folders/files
+          pytest clients/gdrive/tests -m "integration"
