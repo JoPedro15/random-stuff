@@ -18,14 +18,23 @@ class GDriveClient:
     and advanced deletion logic including pagination and prefix filtering.
     """
 
-    def __init__(
-        self, credentials_path: str | None = None, token_path: str | None = None
-    ) -> None:
+    def __init__(self, credentials_path: str, token_path: str = "") -> None:
         """
         Initializes the GDriveClient with robust path resolution for both
         credentials and token files.
         """
         # 1. Define the base directory of this client
+
+        self.creds = None
+        # Logic to handle missing token
+        if token_path and os.path.exists(token_path):
+            # Load existing token logic
+            pass
+
+        if not self.creds:
+            # Fallback to Service Account or flow without token
+            pass
+
         base_dir: Path = Path(__file__).parent
 
         # 2. Resolve Credentials Path
