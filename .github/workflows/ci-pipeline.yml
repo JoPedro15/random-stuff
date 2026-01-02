@@ -90,8 +90,11 @@ jobs:
     if: ${{ needs.changes.outputs.gdrive == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -113,11 +116,11 @@ jobs:
           source .venv/bin/activate
           python -m pytest clients/gdrive/tests -m "not integration" || [ $? -eq 5 ]
 
-          - name: Run GDrive Integration Tests
-            env:
-              GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-              OUTPUT_FOLDER_ID: ${{ secrets.OUTPUT_FOLDER_ID }}
-              PYTHONPATH: ${{ github.workspace }}
-            run: |
-              source .venv/bin/activate
-              python -m pytest clients/gdrive/tests -m "integration"
+      - name: Run GDrive Integration Tests
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          OUTPUT_FOLDER_ID: ${{ secrets.OUTPUT_FOLDER_ID }}
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          source .venv/bin/activate
+          python -m pytest clients/gdrive/tests -m "integration"
