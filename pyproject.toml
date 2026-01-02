@@ -73,3 +73,11 @@ filterwarnings = [
     "ignore::DeprecationWarning:googleapiclient.*",
 ]
 addopts = "--doctest-modules --strict-markers"
+# Register custom markers to avoid UnknownMarkWarning
+markers = [
+    "integration: marks tests as integration tests (requires API access)",
+    "unit: marks tests as unit tests",
+]
+# Ensure the root of the project is always in the path
+pythonpath = ["."]
+testpaths = ["clients"]

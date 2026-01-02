@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 
 from clients.gdrive import GDriveClient
 
+OUTPUT_DIR: Path = Path(__file__).parent.parent / "output"
+
 
 @pytest.fixture(scope="module")
 def gdrive_setup() -> tuple[GDriveClient, str]:
@@ -16,6 +18,10 @@ def gdrive_setup() -> tuple[GDriveClient, str]:
     Ensures environment variables are present before starting.
     """
     load_dotenv()
+
+    # Ensure the output directory exists locally
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
     root: Path = Path(__file__).parent.parent
     creds: str = str(root / "data" / "credentials.json")
     token: str = str(root / "data" / "token.json")
@@ -28,6 +34,7 @@ def gdrive_setup() -> tuple[GDriveClient, str]:
     return client, folder_id
 
 
+@pytest.mark.integration
 def test_gdrive_full_lifecycle(gdrive_setup: tuple[GDriveClient, str]) -> None:
     """
     Tests the full CRUD lifecycle of files in Google Drive.
@@ -40,50 +47,53 @@ def test_gdrive_full_lifecycle(gdrive_setup: tuple[GDriveClient, str]) -> None:
     5. Clear entire folder
     6. Verify empty state
     """
+
     client, folder_id = gdrive_setup
-    local_test_files: list[str] = ["test_1.txt", "test_2.txt", "test_3.txt"]
+
+    # Mapping filenames to their absolute local paths
+    file_names: list[str] = ["test_1.txt", "test_2.txt", "test_3.txt"]
+    local_paths: list[Path] = [OUTPUT_DIR / name for name in file_names]
 
     try:
-        # Pre-test cleanup to ensure isolation
+        # Pre-test cleanup in the cloud
         client.clear_folder_content(folder_id)
 
         # --- TEST 1: Create/Upload test_1.txt ---
-        file_name_1: str = local_test_files[0]
-        with open(file_name_1, "w") as f:
+        target_path: Path = local_paths[0]
+        with open(target_path, "w") as f:
             f.write("Automation test content")
 
-        file_id_1: str = client.upload_file(file_name_1, folder_id)
+        # Pass the string path to the client
+        file_id_1: str = client.upload_file(str(target_path), folder_id)
         assert file_id_1 is not None
 
         # --- TEST 2: Validate existence ---
-        assert client.file_exists(file_name_1, folder_id) is True
+        assert client.file_exists(file_names[0], folder_id) is True
 
         # --- TEST 3: Add multiple files ---
-        for name in local_test_files[1:]:
-            with open(name, "w") as f:
-                f.write(f"Content for {name}")
-            client.upload_file(name, folder_id)
+        for path in local_paths[1:]:
+            with open(path, "w") as f:
+                f.write(f"Content for {path.name}")
+            client.upload_file(str(path), folder_id)
 
-        # Small sleep to account for API propagation
-        time.sleep(1)
+        time.sleep(1)  # API propagation
 
         files_list: list = client.list_files(folder_id)
         assert len(files_list) == 3
 
         # --- TEST 4: Delete specific file ---
-        client.delete_specific_file("test_3.txt", folder_id)
-        time.sleep(1)  # API propagation
-        assert client.file_exists("test_3.txt", folder_id) is False
+        client.delete_specific_file(file_names[2], folder_id)
+        time.sleep(1)
+        assert client.file_exists(file_names[2], folder_id) is False
         assert len(client.list_files(folder_id)) == 2
 
         # --- TEST 5 & 6: Clear all and validate ---
         client.clear_folder_content(folder_id)
-        time.sleep(1)  # API propagation
+        time.sleep(1)
         assert len(client.list_files(folder_id)) == 0
 
     finally:
-        # Cleanup local artifacts even if assertions fail
-        for file_name in local_test_files:
-            file_path = Path(file_name)
-            if file_path.exists():
-                file_path.unlink()
+        # Cleanup local artifacts in the output folder
+        for path in local_paths:
+            if path.exists():
+                path.unlink()
