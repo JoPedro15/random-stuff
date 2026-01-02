@@ -106,7 +106,6 @@ The mandatory gate before any push. It executes:
 - **Type Safety**: Mandatory type annotations for all infrastructure methods.
 - **No-Print Policy**: Raw `print` statements are strictly forbidden; use the `core-lib` Logger.
 - **Clean Workspace**: Use `make clean` to purge caches and build artifacts.
--
 
 ______________________________________________________________________
 
