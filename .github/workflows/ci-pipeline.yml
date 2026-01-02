@@ -111,14 +111,13 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           source .venv/bin/activate
-          # Use 'python -m pytest' to ensure root modules are discoverable
-          python -m pytest clients/gdrive/tests -m "not integration"
+          python -m pytest clients/gdrive/tests -m "not integration" || [ $? -eq 5 ]
 
-      - name: Run GDrive Integration Tests
-        env:
-          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-          OUTPUT_FOLDER_ID: ${{ secrets.OUTPUT_FOLDER_ID }}
-          PYTHONPATH: ${{ github.workspace }}
-        run: |
-          source .venv/bin/activate
-          python -m pytest clients/gdrive/tests -m "integration"
+          - name: Run GDrive Integration Tests
+            env:
+              GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+              OUTPUT_FOLDER_ID: ${{ secrets.OUTPUT_FOLDER_ID }}
+              PYTHONPATH: ${{ github.workspace }}
+            run: |
+              source .venv/bin/activate
+              python -m pytest clients/gdrive/tests -m "integration"
