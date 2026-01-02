@@ -59,6 +59,7 @@ line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"**/tests/**" = ["S101"]
 "**/*_test.py" = ["S101"]
 # Allow print only in the core logger client
 "clients/core_lib/core_lib_client/logger_client.py" = ["T201"]
