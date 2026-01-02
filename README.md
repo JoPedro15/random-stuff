@@ -92,15 +92,16 @@ Our **5-Step Orchestrator** ensures a healthy environment:
 - **Dependencies**: Installs global requirements.
 - **Client Linking**: Installs all clients in editable mode for cross-module development.
 - **Integrity**: Runs a verification script to ensure all modules are correctly mapped.
-- **Security**: Initializes pre-commit hooks and triggers a Bandit SAST scan.
+- **Security**: Initializes pre-commit hooks and ensures environment baseline protection.
 
 ### Quality Assurance (`make quality`)
 
 The mandatory gate before any push. It executes:
 
-- **Ruff**: Unified engine for linting, formatting, and Security SAST (Bandit rules) across Scripts & Notebooks.
+- **Ruff**: Our unified engine for linting, formatting, and **Security SAST (Bandit rules)**.
+  It natively handles both `.py` scripts and \`.ipynb notebooks with specialized rule-sets.
 - **Pre-commit**: Validates AST, YAML syntax, and strict No-Print policies.
-- **Security Audit**: Runs \`pip-audit to scan dependencies for known vulnerabilities (CVEs).
+- **Security Audit**: Runs `pip-audit` to scan dependencies for known vulnerabilities (CVEs).
 - **Tests**: Executes the full `pytest` suite with automated warning suppression for clean logs.
 
 ## 📖 Governance & Standards
