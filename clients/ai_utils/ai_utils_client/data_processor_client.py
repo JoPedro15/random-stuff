@@ -2,6 +2,8 @@ import logging
 
 import pandas as pd
 
+from clients.gdrive import GDriveClient
+
 
 class DataProcessorClient:
     """
@@ -11,11 +13,13 @@ class DataProcessorClient:
     ensuring consistency across different AI and Data Science projects.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, gdrive_client: GDriveClient | None = None) -> None:
         """
         Initializes the DataProcessorClient.
         Currently stateless, but prepared for future global configurations.
         """
+
+        self.gdrive = gdrive_client
         pass
 
     def encode_categorical_features(
