@@ -1,3 +1,5 @@
+# automation-hub/clients/gdrive/gdrive_client.py
+
 import io
 import os
 from pathlib import Path
@@ -18,35 +20,31 @@ class GDriveClient:
     and advanced deletion logic including pagination and prefix filtering.
     """
 
-    def __init__(self, credentials_path: str, token_path: str = "") -> None:
+    def __init__(
+        self, credentials_path: str | None = None, token_path: str | None = None
+    ) -> None:
         """
-        Initializes the GDriveClient with robust path resolution for both
-        credentials and token files.
+        Initializes the GDriveClient with robust path resolution and automatic
+        directory management for authentication artifacts.
         """
-        # 1. Define the base directory of this client
 
-        self.creds = None
-        # Logic to handle missing token
-        if token_path and os.path.exists(token_path):
-            # Load existing token logic
-            pass
+        # 1. Internal defaults resolution
+        # Resolve relative to the client package structure inside automation-hub
+        base_dir: Path = Path(__file__).parent.resolve()
+        package_default_creds: str = str(base_dir.parent / "data" / "credentials.json")
+        package_default_token: str = str(base_dir.parent / "data" / "token.json")
 
-        if not self.creds:
-            # Fallback to Service Account or flow without token
-            pass
-
-        base_dir: Path = Path(__file__).parent
-
-        # 2. Resolve Credentials Path
-        default_creds: str = str(base_dir.parent / "data" / "credentials.json")
+        # 2. Resolve Credentials Path (Priority: Arg > Env > Package Default)
         self.credentials_path: str = (
-            credentials_path or os.getenv("GDRIVE_CREDENTIALS_PATH") or default_creds
+            credentials_path
+            or os.getenv("GDRIVE_CREDENTIALS_PATH")
+            or package_default_creds
         )
 
-        # 3. Resolve Token Path
-        default_token: str = str(base_dir.parent / "data" / "token.json")
+        # 3. Resolve Token Path (Priority: Arg > Env > Package Default)
+        # This allows ai-lab to inject 'data/auth_files/gdrive/token.json' seamlessly
         self.token_path: str = (
-            token_path or os.getenv("GDRIVE_TOKEN_PATH") or default_token
+            token_path or os.getenv("GDRIVE_TOKEN_PATH") or package_default_token
         )
 
         # 4. Critical Path Validation
@@ -55,13 +53,20 @@ class GDriveClient:
                 f"❌ Credentials file missing! \nChecked: {self.credentials_path}"
             )
 
-        # 5. Configuration
+        # 5. Infrastructure Readiness (Rigor)
+        # Automatically create the auth directory (e.g., data/auth_files/gdrive) if it doesn't exist
+        token_dir: Path = Path(self.token_path).parent
+        token_dir.mkdir(parents=True, exist_ok=True)
+
+        # 6. Service Configuration
         self.scopes: list[str] = ["https://www.googleapis.com/auth/drive"]
         self.output_folder_id: str | None = os.getenv("OUTPUT_FOLDER_ID")
 
-        # 6. Initialize the service
-        # Casting to Any here stops the "Unresolved attribute reference" in the IDE
-        # while allowing you to use .files(), .list(), etc.
+        # 7. Initialize Internal State
+        self.creds: Any = None
+
+        # 8. Initialize the Google Service
+        # Note: _init_service should handle the logic of loading/generating the token
         self.service: Any = self._init_service()
 
     def _init_service(self) -> Resource:
