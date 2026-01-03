@@ -95,6 +95,52 @@ The mandatory gate before any push. It executes:
 - **Security Audit**: Scans dependencies for known vulnerabilities (CVEs) via `pip-audit`.
 - **Tests**: Executes the full \`pytest suite with automated warning suppression.
 
+## 🩺 Infrastructure Health System
+
+The **automation-hub** features a dynamic diagnostic system designed to ensure all core integrations (GDrive, Logger,
+Ingestors) are fully operational before executing pipelines in the **ai-lab**.
+
+### How it Works
+
+The system utilizes a central orchestrator (`scripts/health_check_global.py`) that automatically discovers new test
+modules based on specific conventions:
+
+- **Location**: `scripts/`
+- **Naming Convention**: `health_check_*.py`
+- **Contract**: Each file must implement a `run_check() -> tuple[bool, str]` function.
+
+### Local Execution
+
+To validate the health of the entire infrastructure, run:
+
+```Bash
+make health
+```
+
+This command automatically injects the required environment variables and cleans up artifacts after execution.
+
+### Adding a New Check
+
+To monitor a new component (e.g., a database):
+
+1. Create a new file: `scripts/health_check_db.py`.
+
+1. Implement the connection logic following the contract:
+
+```Python
+def run_check() -> tuple[bool, str]:
+    # Your connection logic here
+    return True, "Database is reachable"
+```
+
+3. The make health command will automatically include this new test in its next run.
+
+### CI/CD Integration
+
+Infrastructure health is validated weekly (Fridays at 20:00) via **GitHub Actions**, ensuring the Hub is ready for
+intensive
+use during the weekend.
+
 ## 📖 Governance & Standards
 
 - **Type Safety**: Mandatory type annotations for all infrastructure methods.

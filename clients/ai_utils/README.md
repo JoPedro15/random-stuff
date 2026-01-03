@@ -9,9 +9,10 @@ caching, and feature engineering to provide a seamless bridge between raw data s
 ## ⚙️ Features
 
 - **Resilient Data Ingestion**: Managed downloads from GDrive with built-in file health checks and cache invalidation.
-- **Standardized Preprocessing**: Robust encoding and cleaning methods to ensure data consistency.
+- **Standardized Preprocessing**: Robust encoding and cleaning methods using `pandas` and `numpy`.
+- **Excel Optimized**: Native support for `.xlsx` processing via `openpyxl` engine.
 - **Type-Safe Transformations**: Fully annotated methods for high-reliability pipelines.
-- **Automated Quality**: Integrated with `pre-commit` hooks for linting, formatting, and security.
+-
 
 ## 🏗 Key Components
 
