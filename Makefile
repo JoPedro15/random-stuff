@@ -74,9 +74,8 @@ lint-and-format:
 # CI/CD specific target for environment readiness
 update-deps:
 	@echo ">>> 📦 Preparing Environment Infrastructure (CI Mode: $(CI))..."
-	@if [ "$(CI)" != "true" ]; then \
-		$(PIP) install --upgrade pip; \
-	fi
+	$(PIP) install --upgrade pip
+	# We call setup directly as it already handles requirements and editable installs
 	@$(MAKE) setup
 
 setup: clean
