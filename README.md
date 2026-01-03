@@ -46,14 +46,14 @@ clients/
 
 ### Key Principles:
 
-- **Promotion Pattern**: The main interface is always exposed at the package root level (`__init__.py`), allowing clean
-  imports like `from clients.gdrive import GDriveClient`.
-- **Independent Lifecycles**: Each client has its own `Makefile` and `tests/`, allowing them to be validated in
-  isolation or as part of the global pipeline.
-- **Security Isolation**: Credentials and local caches are stored in an isolated `data/` folder within each client,
-  ensuring secrets never leave their specific context.
+- **Promotion Pattern**: Promotion Pattern: Interfaces are exposed at the package root level (`__init__.py`),
+  allowing clean imports like \`from clients.gdrive import GDriveClient.
+- **Independent Lifecycles**: Each client can be validated in isolation or as part of the global pipeline via
+  the root \`Makefile.
+- **Security Isolation**: Credentials and local caches are stored in an isolated \`data/ folder within each client
+- context.
 - **Silent Testing**: Pytest is pre-configured to suppress third-party **DeprecationWarnings**
-  (e.g., Google API/httplib2), ensuring developers focus only on actionable infrastructure logs.
+  (e.g., Google API/httplib2), ensuring focus on actionable logs.
 
 ## 🔌 Core Infrastructure Modules
 
@@ -62,23 +62,16 @@ for clean API exposure.
 
 ### 🛠️ [Core Library](./clients/core_lib/README.md)
 
-The foundation of the ecosystem. It provides the standardized ANSI-colored Logger used across all modules to enforce our
+The ecosystem's foundation. Provides the standardized ANSI-colored Logger used across all modules to enforce our
 **Zero-Print Policy**.
-
-- **Feature**: Thread-safe logging with precise timestamps and status-coded colors.
 
 ### 📂 [Google Drive Client](./clients/gdrive/README.md)
 
-A high-level orchestration layer for the Google Drive API.
-
-- **Feature**: Resilient IO, automated pagination, and secure file lifecycle management.
+A high-level orchestration layer for the Google Drive API, featuring resilient IO and automated pagination.
 
 ### 🧠 [AI Utilities](./clients/ai_utils/README.md)
 
-Specialized tools for data acquisition and feature engineering.
-
-- **Data Ingestor**: Managed acquisition with local cache validation and integrity checks.
-- **Data Processor**: Type-safe feature engineering and categorical encoding.
+Specialized tools for data acquisition and feature engineering, providing type-safe processors and managed ingestors.
 
 ## 🛠️ Global Quality Gate (GNU Make)
 
@@ -86,23 +79,21 @@ We use a unified orchestration system to ensure parity between local development
 
 ### Environment Setup (`make setup`)
 
-Our **5-Step Orchestrator** ensures a healthy environment:
+Our **4-Step Orchestrator** ensures a healthy environment:
 
-- **VENV**: Creates a Python 3.12 virtual environment.
-- **Dependencies**: Installs global requirements.
-- **Client Linking**: Installs all clients in editable mode for cross-module development.
-- **Integrity**: Runs a verification script to ensure all modules are correctly mapped.
-- **Security**: Initializes pre-commit hooks and ensures environment baseline protection.
+- **VENV**: Initializes a Python 3.12 virtual environment.
+- **Requirements**: Installs all global and development dependencies.
+- **Editable Mapping**: Installs all clients in **Editable Mode** for real-time cross-module development.
+- **Integrity Check**: Executes a smoke test to verify module discovery and package health.
 
 ### Quality Assurance (`make quality`)
 
 The mandatory gate before any push. It executes:
 
-- **Ruff**: Our unified engine for linting, formatting, and **Security SAST (Bandit rules)**.
-  It natively handles both `.py` scripts and \`.ipynb notebooks with specialized rule-sets.
-- **Pre-commit**: Validates AST, YAML syntax, and strict No-Print policies.
-- **Security Audit**: Runs `pip-audit` to scan dependencies for known vulnerabilities (CVEs).
-- **Tests**: Executes the full `pytest` suite with automated warning suppression for clean logs.
+- **Ruff**: Unified engine for Linting, Formatting, and **Security SAST (Bandit rules)**.
+- **Pre-commit**: Local validation of AST, YAML syntax, and strict No-Print policies.
+- **Security Audit**: Scans dependencies for known vulnerabilities (CVEs) via `pip-audit`.
+- **Tests**: Executes the full \`pytest suite with automated warning suppression.
 
 ## 📖 Governance & Standards
 

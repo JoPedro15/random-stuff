@@ -1,17 +1,19 @@
+# automation-hub/.pre-commit-config.yaml
+
 # Automation Hub Pre-commit Configuration
 # Orchestrating quality for Core, GDrive, and AI-Utils clients
 
 repos:
-  # --- Core Hygiene: Basic file integrity ---
+  # --- Core Hygiene: Basic file integrity and standards ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: end-of-file-fixer           # Ensures files end with a newline
       - id: trailing-whitespace          # Trims unnecessary whitespace
-      - id: mixed-line-ending           # Normalizes LF/CRLF
-      - id: check-yaml                  # Validates YAML syntax
+      - id: mixed-line-ending           # Normalizes LF/CRLF (standardizes line breaks)
+      - id: check-yaml                  # Validates YAML syntax for config files
       - id: check-ast                   # Ensures Python files are syntactically valid
-      - id: check-merge-conflict        # Blocks unresolved merge conflicts
+      - id: check-merge-conflict        # Blocks unresolved git merge conflicts
       - id: check-added-large-files     # Prevents large binary commits (>3MB)
         args: [ '--maxkb=3000' ]
 
@@ -19,12 +21,12 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.0
     hooks:
-      - id: ruff                        # Logic, Imports, Modernization & Security (S)
+      - id: ruff                        # Handles Logic, Imports, and Security (S) rules
         args: [ --fix, --exit-non-zero-on-fix ]
-      - id: ruff-format                  # Style & Formatting
+      - id: ruff-format                  # Standardizes Style & Formatting
         # Note: Ruff automatically discovers and formats .ipynb files
 
-  # --- Spelling Check: Preventing typos in code and docs ---
+  # --- Spelling Check: Preventing typos in code and documentation ---
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -32,7 +34,7 @@ repos:
         args: [ --ignore-words-list=nd,ue,ody ]
         exclude: ^clients/.*\.egg-info/|^.venv/
 
-  # --- Documentation: Markdown formatting ---
+  # --- Documentation: Markdown formatting for high-quality READMEs ---
   - repo: https://github.com/executablebooks/mdformat
     rev: 1.0.0
     hooks:

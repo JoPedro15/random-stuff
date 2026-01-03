@@ -1,4 +1,4 @@
-# .github/workflows/ci-pipeline.yml
+# automation-hub/.github/workflows/ci-pipeline.yml
 name: CI Quality Pipeline
 
 on:
@@ -12,10 +12,12 @@ permissions:
   contents: read
 
 concurrency:
+  # Prevents redundant builds by cancelling in-progress runs on the same branch
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # --- JOB 1: Static Analysis, Quality Gate & Security ---
   quality-gate:
     name: Global Quality & Security
     runs-on: ubuntu-latest
@@ -30,43 +32,44 @@ jobs:
           cache: "pip"
 
       - name: Environment Setup
-        # Orchestrates venv and editable installs
+        # Orchestrates virtual environment and editable installs via Makefile
         run: |
           python -m venv .venv
           source .venv/bin/activate
           make setup CI=true
 
       - name: Lint & Static Analysis
-        # Checks logic, imports and potential bugs via Ruff
+        # Checks for logic errors, unused imports, and common bugs via Ruff
         run: |
           source .venv/bin/activate
           ruff check .
 
       - name: Formatting Check
-        # Validates if code follows the project style (Ruff format)
+        # Validates if code strictly adheres to project style guide
         run: |
           source .venv/bin/activate
           ruff format . --check
 
-      - name: Security SAST (Bandit)
-        # Analyzes the codebase for security vulnerabilities
+      - name: Security SAST (Bandit Rules)
+        # Scans codebase for security vulnerabilities using Ruff's security ruleset
         run: |
           source .venv/bin/activate
           ruff check . --select S
 
       - name: Infrastructure Health
-        # Validates internal client mapping and imports
+        # Validates internal package mapping and module integrity
         run: |
           source .venv/bin/activate
           make verify-env
 
       - name: Dependency Audit
-        # Scans for known vulnerabilities in external libraries
+        # Scans external libraries for known CVEs
         run: |
           source .venv/bin/activate
           make security
 
-  # CHANGES DETECTION: Identify which clients need testing
+  # --- JOB 2: Changes Detection ---
+  # Identifies which specific clients were modified to trigger relevant tests
   changes:
     name: Detect Changes
     runs-on: ubuntu-latest
@@ -83,7 +86,8 @@ jobs:
             gdrive:
               - 'clients/gdrive/**'
 
-  # GDrive Job: Specific validations when changes are detected
+  # --- JOB 3: GDrive Specific Tests ---
+  # Only triggers if quality-gate passes AND changes are detected in GDrive client
   gdrive-tests:
     name: GDrive Integration Tests
     needs: [ quality-gate, changes ]
@@ -97,6 +101,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
 
       - name: Install Environment
         run: |
@@ -105,6 +110,7 @@ jobs:
           make setup CI=true
 
       - name: Initialize Credentials
+        # Injects secrets into a physical file for GDrive authentication
         run: |
           mkdir -p clients/gdrive/data
           echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > clients/gdrive/data/credentials.json
@@ -114,9 +120,11 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           source .venv/bin/activate
+          # Skips integration tests using markers; ignores exit code 5 (no tests found)
           python -m pytest clients/gdrive/tests -m "not integration" || [ $? -eq 5 ]
 
       - name: Run GDrive Integration Tests
+        # Requires valid GDrive secrets for cloud communication
         env:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           OUTPUT_FOLDER_ID: ${{ secrets.OUTPUT_FOLDER_ID }}
