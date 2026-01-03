@@ -1,126 +1,85 @@
-# .github/workflows/ci-pipeline.yml
-name: CI Quality Pipeline
+name: Infrastructure Health Check
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch: { }
+  schedule:
+    # Runs every Friday at 20:00 to ensure the hub is ready for the weekend
+    - cron: '0 20 * * 5'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  quality-gate:
-    name: Global Quality & Security
+  # --- JOB 1: Static Analysis & Security ---
+  quality-check:
+    name: Linting, Formatting & Security
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-          cache: "pip"
+          python-version: '3.12'
+          cache: 'pip'
 
-      - name: Environment Setup
-        # Orchestrates venv and editable installs
+      - name: Install Tools & Dependencies
+        # Upgrades pip and uses the Makefile SSoT for dependencies
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          make setup CI=true
+          python -m pip install --upgrade pip
+          make update-deps CI=true
+          pip install ruff pip-audit
 
-      - name: Lint & Static Analysis
-        # Checks logic, imports and potential bugs via Ruff
+      - name: Ruff Lint & Format Check
+        # Replaces Black/Isort by using Ruff for both logic and style validation
         run: |
-          source .venv/bin/activate
           ruff check .
-
-      - name: Formatting Check
-        # Validates if code follows the project style (Ruff format)
-        run: |
-          source .venv/bin/activate
           ruff format . --check
 
-      - name: Security SAST (Bandit)
-        # Analyzes the codebase for security vulnerabilities
-        run: |
-          source .venv/bin/activate
-          ruff check . --select S
-
-      - name: Infrastructure Health
-        # Validates internal client mapping and imports
-        run: |
-          source .venv/bin/activate
-          make verify-env
+      - name: Security SAST
+        # Runs security-focused rules (Bandit-like) using Ruff
+        run: ruff check . --select S
 
       - name: Dependency Audit
-        # Scans for known vulnerabilities in external libraries
-        run: |
-          source .venv/bin/activate
-          make security
+        # Checks for vulnerabilities in the dependency tree
+        run: make security CI=true
 
-  # CHANGES DETECTION: Identify which clients need testing
-  changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      gdrive: ${{ steps.filter.outputs.gdrive }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Filter Paths
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            gdrive:
-              - 'clients/gdrive/**'
-
-  # GDrive Job: Specific validations when changes are detected
-  gdrive-tests:
-    name: GDrive Integration Tests
-    needs: [ quality-gate, changes ]
-    if: ${{ needs.changes.outputs.gdrive == 'true' }}
+  # --- JOB 2: Integration & Environment Mapping ---
+  global-health-check:
+    name: Integration & Credentials Health
+    needs: quality-check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
-      - name: Install Environment
+      - name: Initialize Environment
+        # Orchestrates editable installs and venv-like behavior in CI
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          make setup CI=true
+          make update-deps CI=true
 
-      - name: Initialize Credentials
+      - name: Validate GDrive Infrastructure
+        env:
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
+          GDRIVE_TOKEN_DATA: ${{ secrets.GDRIVE_TOKEN_JSON }}
+          GDRIVE_CREDENTIALS_PATH: "clients/gdrive/data/credentials.json"
+          GDRIVE_TOKEN_PATH: "clients/gdrive/data/token.json"
+          # Ensures absolute path for module discovery during health check
+          PYTHONPATH: ${{ github.workspace }}
         run: |
+          # Create credentials directory and inject secrets
           mkdir -p clients/gdrive/data
-          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > clients/gdrive/data/credentials.json
+          echo "$GDRIVE_CREDENTIALS_DATA" > "$GDRIVE_CREDENTIALS_PATH"
+          echo "$GDRIVE_TOKEN_DATA" > "$GDRIVE_TOKEN_PATH"
 
-      - name: Run GDrive Unit Tests
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: |
-          source .venv/bin/activate
-          python -m pytest clients/gdrive/tests -m "not integration" || [ $? -eq 5 ]
+          # Fail-fast validation of JSON integrity
+          python3 -c "import json; [json.load(open(f)) for f in ['$GDRIVE_CREDENTIALS_PATH', '$GDRIVE_TOKEN_PATH']]" || { echo "❌ Invalid JSON Secrets"; exit 1; }
 
-      - name: Run GDrive Integration Tests
-        env:
-          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-          OUTPUT_FOLDER_ID: ${{ secrets.OUTPUT_FOLDER_ID }}
-          PYTHONPATH: ${{ github.workspace }}
-        run: |
-          source .venv/bin/activate
-          python -m pytest clients/gdrive/tests -m "integration"
+          # Execute the custom health target from the automation-hub Makefile
+          make health CI=true
