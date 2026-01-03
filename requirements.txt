@@ -1,3 +1,5 @@
+# requirements.txt
+
 # --- Core Environment & Utilities ---
 python-dotenv         # Environment variable management
 requests              # HTTP library for API interactions
