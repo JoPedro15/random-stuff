@@ -7,6 +7,8 @@
 SHELL := /bin/bash
 VENV  := .venv
 CI    ?= false
+PYTHON  := $(VENV)/bin/python
+ROOT := $(shell pwd)
 
 # Clients Directory Mapping
 CORE_LIB_DIR   := clients/core_lib
@@ -35,7 +37,7 @@ AUDIT   := $(BIN)pip-audit
 ROOT_DIR := $(shell pwd)
 export PYTHONPATH := $(ROOT_DIR):$(ROOT_DIR)/$(GDRIVE_DIR):$(ROOT_DIR)/$(CORE_LIB_DIR):$(ROOT_DIR)/$(AI_UTILS_DIR)
 
-.PHONY: help setup quality security health test-all clean lint-and-format verify-env update-deps
+.PHONY: help setup quality security health clean-health-artifacts test-all clean lint-and-format verify-env update-deps
 
 help:
 	@echo "Automation Hub - Management Targets:"
@@ -77,7 +79,7 @@ update-deps:
 	@$(MAKE) setup
 	fi
 
-setup:
+setup: clean
 	@echo ">>> 🛠️  [STEP 1/5] Initializing Virtual Environment..."
 	@if [ ! -d "$(VENV)" ]; then python3 -m venv $(VENV); fi
 	@$(PIP) install --upgrade pip
@@ -105,9 +107,20 @@ security:
 	$(AUDIT) --skip-editable --ignore-vuln CVE-2025-53000
 
 health:
-	@echo ">>> 🧪 Running Infrastructure Health Check..."
-	# Simple smoke test to ensure core client initialization
-	$(PY) -c "from gdrive_client.client import GDriveClient; print('>>> ✅ GDriveClient import healthy.')"
+	@echo ">>> 🩺 [HEALTH] Running Global Infrastructure Diagnostics..."
+	@export GOOGLE_CREDENTIALS_PATH="clients/gdrive/data/credentials.json"; \
+	PYTHONPATH=$(ROOT) $(PYTHON) scripts/health_check_global.py; \
+	STATUS=$$?; \
+	echo ""; \
+	$(MAKE) clean-health-artifacts; \
+	exit $$STATUS
+
+clean-health-artifacts:
+	@echo ">>> 🧹 Cleaning health check artifacts..."
+	@# Use -f (force) to ignore errors if files don't exist
+	@rm -rf data/logs/*.log
+	@rm -f scripts/.logger_health_test
+	@echo ">>> ✨ Environment is clean."
 
 test-all:
 	@echo ">>> 🧪 Running Pytest suite..."

@@ -3,7 +3,6 @@ name: Infrastructure Health Check
 
 on:
   schedule:
-    # Runs every Friday at 20:00 to ensure the hub is ready for the weekend
     - cron: '0 20 * * 5'
   workflow_dispatch:
 
@@ -11,9 +10,39 @@ permissions:
   contents: read
 
 jobs:
-  # --- JOB 1: Static Analysis & Security ---
   quality-check:
     name: Linting, Formatting & Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12 # Alinhado com estabilidade de CI
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip' # Ativa cache para acelerar runs futuros
+
+      - name: Install Tools & Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          make update-deps CI=true
+          pip install ruff pip-audit
+
+      - name: Ruff Lint & Format Check
+        run: |
+          ruff check .
+          ruff format . --check
+
+      - name: Security SAST
+        run: ruff check . --select S
+
+      - name: Dependency Audit
+        run: make security CI=true
+
+  global-health-check:
+    name: Automated Integration Health
+    needs: quality-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -25,62 +54,26 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install Tools & Dependencies
-        # Upgrades pip and uses the Makefile SSoT for dependencies
-        run: |
-          python -m pip install --upgrade pip
-          make update-deps CI=true
-          pip install ruff pip-audit
+      - name: Initialize Infrastructure
+        run: make update-deps CI=true
 
-      - name: Ruff Lint & Format Check
-        # Replaces Black/Isort by using Ruff for both logic and style validation
-        run: |
-          ruff check .
-          ruff format . --check
-
-      - name: Security SAST
-        # Runs security-focused rules (Bandit-like) using Ruff's 'S' group
-        run: ruff check . --select S
-
-      - name: Dependency Audit
-        # Checks for known vulnerabilities in the dependency tree via Makefile
-        run: make security CI=true
-
-  # --- JOB 2: Integration & Environment Mapping ---
-  global-health-check:
-    name: Integration & Credentials Health
-    needs: quality-check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Initialize Environment
-        # Orchestrates editable installs and environment readiness in CI
-        run: |
-          make update-deps CI=true
-
-      - name: Validate GDrive Infrastructure
+      - name: Execute Health Diagnostics
         env:
           GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_JSON }}
           GDRIVE_TOKEN_DATA: ${{ secrets.GDRIVE_TOKEN_JSON }}
           GDRIVE_CREDENTIALS_PATH: "clients/gdrive/data/credentials.json"
           GDRIVE_TOKEN_PATH: "clients/gdrive/data/token.json"
-          # Ensures absolute path for module discovery during health check execution
+          LOG_LEVEL: "INFO"
+          LOG_FILE_PATH: "data/logs/infrastructure.log"
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          # Create credentials directory and inject secrets from GitHub Secrets
-          mkdir -p clients/gdrive/data
-          echo "$GDRIVE_CREDENTIALS_DATA" > "$GDRIVE_CREDENTIALS_PATH"
-          echo "$GDRIVE_TOKEN_DATA" > "$GDRIVE_TOKEN_PATH"
+          mkdir -p clients/gdrive/data data/logs
 
-          # Fail-fast validation of JSON integrity before client initialization
-          python3 -c "import json; [json.load(open(f)) for f in ['$GDRIVE_CREDENTIALS_PATH', '$GDRIVE_TOKEN_PATH']]" || { echo "❌ Invalid JSON Secrets"; exit 1; }
+          printf "%s" "$GDRIVE_CREDENTIALS_DATA" > "$GDRIVE_CREDENTIALS_PATH"
+          printf "%s" "$GDRIVE_TOKEN_DATA" > "$GDRIVE_TOKEN_PATH"
 
-          # Execute the custom health target from the automation-hub Makefile
+          # Pre-flight JSON Integrity Check
+          python3 -c "import json; [json.load(open(f)) for f in ['$GDRIVE_CREDENTIALS_PATH', '$GDRIVE_TOKEN_PATH']]" || { echo "❌ Invalid Secrets JSON"; exit 1; }
+
+          # Run Dynamic Orchestrator
           make health CI=true
