@@ -32,7 +32,7 @@ AUDIT   := $(BIN)pip-audit
 # Export PYTHONPATH for local module discovery
 export PYTHONPATH := .:$(GDRIVE_DIR):$(CORE_LIB_DIR):$(AI_UTILS_DIR)
 
-.PHONY: help setup quality security health test-all clean lint-and-format verify-env
+.PHONY: help setup quality security health test-all clean lint-and-format verify-env update-deps
 
 help:
 	@echo "Automation Hub - Management Targets:"
@@ -66,6 +66,14 @@ lint-and-format:
 
 # --- Infrastructure & Environment ---
 
+update-deps:
+	@echo ">>> 📦 Updating dependencies (CI Mode: $(CI))..."
+	$(PIP) install --upgrade pip
+	$(PIP) install -r requirements.txt
+	@if [ "$(CI)" = "false" ]; then \
+		$(MAKE) setup; \
+	fi
+
 setup:
 	@echo ">>> 🛠️  [STEP 1/5] Initializing Virtual Environment..."
 	@if [ ! -d "$(VENV)" ]; then python3 -m venv $(VENV); fi
@@ -92,6 +100,11 @@ verify-env:
 security:
 	@echo ">>> 🛡️ Running Dependency Audit..."
 	$(AUDIT) --skip-editable --ignore-vuln CVE-2025-53000
+
+health:
+	@echo ">>> 🧪 Running Infrastructure Health Check..."
+	@# This executes a simple check to ensure clients can be instantiated
+	$(PY) -c "from gdrive_client.client import GDriveClient; print('>>> ✅ GDriveClient import healthy.')"
 
 test-all:
 	@echo ">>> 🧪 Running Pytest suite..."
